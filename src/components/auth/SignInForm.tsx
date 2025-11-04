@@ -5,6 +5,11 @@ import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
+import axios from '../../api/axios'
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+
+
 type dataType = {
     username: string;
     password: string;
@@ -20,10 +25,22 @@ export default function SignInForm() {
         isChecked: false,
     
     });
-    const handleSubmit = (e: any) => {
+    
+    const { refresh } = useAuth();
+    const navigate = useNavigate();
+    const handleSubmit = async (e: any) => {
          e.preventDefault();
-        // replace with real submit logic
-        console.log("Sign in:",data);
+         await axios.post('/users/login/', {
+            username: data.username,
+            password: data.password,
+         },{
+            withCredentials:true,
+         }).then(async (response)=>{
+             await refresh();
+             navigate('/dashboard')
+         }).catch((error)=>{
+            console.error("Login failed:",error);
+         })
     };
 
     return (

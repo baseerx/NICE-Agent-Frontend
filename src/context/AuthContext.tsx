@@ -1,5 +1,5 @@
 import  { createContext, useContext, useEffect, useState, ReactNode } from "react";
-
+import axios from "../api/axios";
 type User = {
     username: string;
     email: string;
@@ -24,35 +24,36 @@ type AuthProviderProps = {
     sessionCheckUrl?: string;
 };
 
-export const AuthProvider = ({ children, sessionCheckUrl = "/api/users/sessions/" }: AuthProviderProps) => {
+export const AuthProvider = ({ children, sessionCheckUrl = "/users/session/" }: AuthProviderProps) => {
     const [user, setUser] = useState<User | null>(null);
     const [authenticated, setAuthenticated] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
-    const refresh = async () => {
+    
+    const refresh = async (): Promise<void> => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(sessionCheckUrl, {
-                method: "GET",
-                credentials: "include", // include cookies for Django session auth
+            const res = await axios.get(sessionCheckUrl, {
+                withCredentials: true,
                 headers: {
-                    "Accept": "application/json",
+                    Accept: "application/json",
                 },
             });
-
-            if (!res.ok) {
+            if (res.status !== 200) {
                 // treat non-2xx as unauthenticated but capture message if present
-                const text = await res.text().catch(() => "");
+                const message =
+                    (res.data && (res.data.detail || res.data.message)) ||
+                    res.statusText ||
+                    `HTTP ${res.status}`;
                 setAuthenticated(false);
                 setUser(null);
-                setError(text || `HTTP ${res.status}`);
+                setError(message);
                 return;
             }
 
-            const data = await res.json();
-            if (data.authenticated) {
+            const data = res.data;
+            if (data?.authenticated) {
                 setAuthenticated(true);
                 setUser(data.user ?? null);
             } else {
@@ -68,6 +69,9 @@ export const AuthProvider = ({ children, sessionCheckUrl = "/api/users/sessions/
         }
     };
 
+  useEffect(() => {
+    refresh();
+  }, []);
 
 
     return (
