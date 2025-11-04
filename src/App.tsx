@@ -20,6 +20,7 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { PublicRoute } from "./routes/PublicRoutes";
+import VerifiedArticles from "./pages/Articles/VerifiedArticles";
 export default function App() {
   return (
     <>
@@ -33,6 +34,7 @@ export default function App() {
               <Route index path="/dashboard" element={<Home />} />
 
               {/* Others Page */}
+              <Route path="/verified-articles" element={<VerifiedArticles />} />
               <Route path="/profile" element={<UserProfiles />} />
             </Route>
             <Route path="/calendar" element={<Calendar />} />
