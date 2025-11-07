@@ -35,10 +35,10 @@ export default function SignInForm() {
             password: data.password,
          },{
             withCredentials:true,
-         }).then(async (response)=>{
+         }).then(async ()=>{
              await refresh();
              navigate('/dashboard')
-         }).catch((error)=>{
+         }).catch((error:any)=>{
             console.error("Login failed:",error);
          })
     };
@@ -69,7 +69,7 @@ export default function SignInForm() {
                             <div className="space-y-6">
                                 <div>
                                     <Label>
-                                        Email <span className="text-error-500">*</span>{" "}
+                                        Username <span className="text-error-500">*</span>{" "}
                                     </Label>
                                     <Input
                                         name="username"
