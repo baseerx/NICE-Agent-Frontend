@@ -77,7 +77,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
         toggleSubmenu,
       }}
     >
-      {children}
+          {children}
     </SidebarContext.Provider>
   );
 };

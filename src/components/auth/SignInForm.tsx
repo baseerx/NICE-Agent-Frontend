@@ -18,7 +18,8 @@ type dataType = {
 }
 export default function SignInForm() {
     const [showPassword, setShowPassword] = useState(false);
-
+    const [loading, setLoading] = useState(false);
+    const [error,setError]=useState<string|null>(null);
     const [data, setData] = useState<dataType>({
         username: "",
         password: "",
@@ -29,7 +30,8 @@ export default function SignInForm() {
     const { refresh } = useAuth();
     const navigate = useNavigate();
     const handleSubmit = async (e: any) => {
-         e.preventDefault();
+        e.preventDefault();
+        setLoading(true);
          await axios.post('/users/login/', {
             username: data.username,
             password: data.password,
@@ -38,8 +40,11 @@ export default function SignInForm() {
          }).then(async ()=>{
              await refresh();
              navigate('/dashboard')
+             setLoading(false);
          }).catch((error:any)=>{
-            console.error("Login failed:",error);
+             console.error("Login failed:", error);
+             setError("Invalid username or password");
+            setLoading(false);
          })
     };
 
@@ -63,6 +68,7 @@ export default function SignInForm() {
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             Enter your email and password to sign in!
                         </p>
+                        {error && <div className="mt-3 text-sm text-red-500">{error}</div>}
                     </div>
                     <div>
                         <form onSubmit={handleSubmit}>
@@ -120,13 +126,12 @@ export default function SignInForm() {
                                     </Link>
                                 </div>
                                 <div>
-                                    <Button  type="submit" className="w-full" size="sm">
-                                        Sign in
+                                    <Button  type="submit" className="w-full" size="sm" disabled={loading}>
+                                        {loading ? "Signing in..." : "Sign in"}
                                     </Button>
                                 </div>
                             </div>
                         </form>
-
                         <div className="mt-5">
                             <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                                 Don&apos;t have an account? {""}
