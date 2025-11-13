@@ -5,12 +5,16 @@ import { Article } from "../../types";
 
 interface NewsCardProps {
   article: Article;
+  changeVerificationStatus:(articleId:number)=>void;
 }
 
-const NewsCard: React.FC<NewsCardProps> = ({ article }) => {
+const NewsCard: React.FC<NewsCardProps> = ({ article,changeVerificationStatus }) => {
   const sentiment = article.sentiment || "Neutral";
-  const tags = article.tags?.map((t) => t.tag_name) || [];
-
+    const tags = article.tags?.map((t) => t.tag_name) || [];
+   
+  const changeVerification = async(articleId:number)=>{
+    changeVerificationStatus(articleId);
+  }
   const sentimentColor =
     sentiment === "Positive"
       ? "bg-green-100 text-green-700"
@@ -40,8 +44,9 @@ const NewsCard: React.FC<NewsCardProps> = ({ article }) => {
           {sentiment}
         </span>
 
-        <span
-          className={`text-xs font-medium px-3 py-1 rounded-full bg-green-100 text-green-700`}
+              <span
+                  onClick={()=>changeVerification(article.article_id)}
+          className={`text-xs font-medium px-3 py-1 rounded-full bg-green-100 animate animate-pulse text-green-700 cursor-pointer`}
               >
                   Verified
         </span>

@@ -13,7 +13,25 @@ const VerifiedArticles = () => {
   useEffect(() => {
     fetchVerifiedArticles();
   }, []);
-
+    const changeVerificationStatus = async (articleId: number) => {
+          try {
+            await axios.put(
+              `/articles/${articleId}/unverify/`,
+              {
+                verification_status: "Pending",
+              },
+              {
+                headers: {
+                  "X-CSRFToken": getCsrfToken(),
+                },
+              }
+            );
+            
+          } catch (err) {
+            console.error("Failed to verify article:", err);
+          }
+    setArticles((prev) => prev.filter((a) => a.article_id !== articleId));
+  };
   const fetchVerifiedArticles = async () => {
     try {
       const response = await axios.get("/articles/verified/", {
@@ -51,7 +69,11 @@ const VerifiedArticles = () => {
         <div className="flex flex-col gap-4">
           {/* Display paginated verified articles */}
           {pagedArticles.map((article) => (
-            <VerifiedNewsCard key={article.article_id} article={article} />
+            <VerifiedNewsCard
+              changeVerificationStatus={changeVerificationStatus}
+              key={article.article_id}
+              article={article}
+            />
           ))}
 
           {/* Pagination Controls */}
