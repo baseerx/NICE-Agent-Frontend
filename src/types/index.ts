@@ -1,4 +1,4 @@
-export type Tag = { tag_id: number; tag_name: string };
+export type Tag = { tag_id: number; tag_name: string,sentiment:string };
 export type Article = {
   article_id: number;
   headline: string;

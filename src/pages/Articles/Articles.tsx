@@ -22,14 +22,12 @@ const Articles = () => {
     }
   };
 
- 
-
   const handleSentimentChange = async (
     articleId: number,
     newSentiment: string
   ) => {
     try {
-      const response=await axios.put(
+      const response = await axios.put(
         `/articles/${articleId}/article_sentiment/`,
         {
           sentiment: newSentiment,
@@ -44,8 +42,8 @@ const Articles = () => {
         prev.map((a) =>
           a.article_id === articleId ? { ...a, sentiment: newSentiment } : a
         )
-        );
-        console.log("Sentiment updated:", response.data);
+      );
+      console.log("Sentiment updated:", response.data);
     } catch (err) {
       console.error("Failed to update sentiment:", err);
     }
@@ -53,14 +51,18 @@ const Articles = () => {
 
   const handleVerify = async (articleId: number) => {
     try {
-      await axios.put(`/articles/${articleId}/verify/`, {
-        verification_status:"Verified",
-      }, {
-        headers: {
-          "X-CSRFToken": getCsrfToken(),
+      await axios.put(
+        `/articles/${articleId}/verify/`,
+        {
+          verification_status: "Verified",
         },
-      });
-    fetchArticles();
+        {
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+          },
+        }
+      );
+      fetchArticles();
     } catch (err) {
       console.error("Failed to verify article:", err);
     }
@@ -68,9 +70,15 @@ const Articles = () => {
 
   const handleAddTag = async (articleId: number, newTag: string) => {
     try {
-      await axios.put(`/articles/${articleId}/add_tag/`, { tag_name: newTag },{headers: {
-        "X-CSRFToken": getCsrfToken(),
-      },    });
+      await axios.put(
+        `/articles/${articleId}/add_tag/`,
+        { tag_name: newTag },
+        {
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+          },
+        }
+      );
       setArticles((prev) =>
         prev.map((a) =>
           a.article_id === articleId
@@ -88,7 +96,15 @@ const Articles = () => {
       console.error("Failed to add tag:", err);
     }
   };
-
+  const handleSetIndividualSentiment = async (
+    articleId: number,
+    tagName: string,
+    sentiment: string
+  ) => {
+    console.log(
+      `Setting individual sentiment for article ${articleId}, tag ${tagName} to ${sentiment}`
+    );
+  };
   const handleRemoveTag = async (articleId: number, tagName: string) => {
     try {
       await axios.delete(`/articles/${articleId}/remove_tag/`, {
@@ -110,20 +126,20 @@ const Articles = () => {
     } catch (err) {
       console.error("Failed to remove tag:", err);
     }
-    };
-    
-    const handleDelete = async (articleId: number) => {
-        try {
-            await axios.delete(`/articles/${articleId}/delete/`, {
-                headers: {
-                    "X-CSRFToken": getCsrfToken(),
-                },
-            });
-            setArticles((prev) => prev.filter((a) => a.article_id !== articleId));
-        } catch (err) {
-            console.error("Failed to delete article:", err);
-        }
-    };
+  };
+
+  const handleDelete = async (articleId: number) => {
+    try {
+      await axios.delete(`/articles/${articleId}/delete/`, {
+        headers: {
+          "X-CSRFToken": getCsrfToken(),
+        },
+      });
+      setArticles((prev) => prev.filter((a) => a.article_id !== articleId));
+    } catch (err) {
+      console.error("Failed to delete article:", err);
+    }
+  };
 
   const pageCount = Math.max(1, Math.ceil(articles.length / pageSize));
   const startIndex = currentPage * pageSize;
@@ -145,10 +161,11 @@ const Articles = () => {
               key={a.article_id}
               article={a}
               onSentimentChange={handleSentimentChange}
+              setIndividualSentiment={handleSetIndividualSentiment}
               onVerify={handleVerify}
               onAddTag={handleAddTag}
-                  onRemoveTag={handleRemoveTag}
-                  onDelete={handleDelete}
+              onRemoveTag={handleRemoveTag}
+              onDelete={handleDelete}
             />
           ))}
 

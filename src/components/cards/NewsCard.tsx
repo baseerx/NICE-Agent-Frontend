@@ -1,13 +1,10 @@
 import React, { useState } from "react";
-import {
-  X,
-  Trash2,
-  ChevronDown,
-  Check,
-  ExternalLink,
-} from "lucide-react";
+import { X, Trash2, ChevronDown, Check, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Article } from "../../types";
+import SentimentDropdown from "../ui/dropdown/SentimentDropdown";
+import { Article, Tag } from "../../types";
+import axios from "../../api/axios";
+import { getCsrfToken } from "../../utils/global";
 
 interface NewsCardProps {
   article: Article;
@@ -15,7 +12,7 @@ interface NewsCardProps {
   onVerify: (articleId: number) => void;
   onAddTag: (articleId: number, tag: string) => void;
   onRemoveTag: (articleId: number, tag: string) => void;
-  onDelete?: (articleId: number) => void;
+  onDelete: (articleId: number) => void;
 }
 
 const sentimentOptions = ["Positive", "Neutral", "Negative"];
@@ -26,49 +23,88 @@ const NewsCard: React.FC<NewsCardProps> = ({
   onVerify,
   onAddTag,
   onRemoveTag,
-    onDelete,
+  onDelete,
 }) => {
   const [sentiment, setSentiment] = useState(article.sentiment || "Neutral");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [tags, setTags] = useState(article.tags?.map((t) => t.tag_name) || []);
+  const [mainDropdownOpen, setMainDropdownOpen] = useState(false);
+  const [tags, setTags] = useState<{ tag: string; sentiment: string }[]>(
+    article.tags?.map((t) => ({
+      tag: t.tag_name,
+      sentiment: t.sentiment || "",
+    })) || []
+  );
+
   const [newTag, setNewTag] = useState("");
   const [isDeleted, setIsDeleted] = useState(false);
   const [verified, setVerified] = useState(false);
 
-  // Handle sentiment change
+  // --- Handle overall sentiment ---
   const handleSentimentChange = (option: string) => {
     setSentiment(option);
-    setDropdownOpen(false);
+    setMainDropdownOpen(false);
     onSentimentChange(article.article_id, option);
   };
 
-  // Handle verification toggle
+  // --- Handle verification toggle ---
   const handleVerify = () => {
-    const newStatus = !verified;
-    setVerified(newStatus);
+    setVerified((prev) => !prev);
     onVerify(article.article_id);
   };
 
-  // Handle tag add/remove
+  // --- Handle tag add ---
   const handleAddTag = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newTag.trim() && !tags.includes(newTag)) {
-      setTags([...tags, newTag.trim()]);
-      onAddTag(article.article_id, newTag.trim());
+    const tag = newTag.trim();
+    if (tag && !tags.some((t) => t.tag === tag)) {
+      const updatedTags = [...tags, { tag, sentiment: "" }];
+      setTags(updatedTags);
+      onAddTag(article.article_id, tag);
       setNewTag("");
     }
   };
-  const handleDeleteTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
-    onRemoveTag(article.article_id, tag);
+
+  // --- Handle tag delete ---
+  const handleDeleteTag = (tagName: string) => {
+    const updatedTags = tags.filter((t) => t.tag !== tagName);
+    setTags(updatedTags);
+    onRemoveTag(article.article_id, tagName);
   };
 
-  // Handle delete
+  // --- Handle news delete ---
   const handleDeleteNews = () => {
     setIsDeleted(true);
     onDelete(article.article_id);
   };
 
+  // --- Handle individual tag sentiment ---
+  const handleIndividualTagSentiment = async (
+    tagName: string,
+    sentimentValue: string
+  ) => {
+    try {
+      const response = await axios.post(
+        "/articles/set_tag_sentiment/",
+        {
+          article_id: article.article_id,
+          tag: tagName,
+          sentiment: sentimentValue,
+        },
+        { withCredentials: true, headers: { "X-CSRFToken": getCsrfToken() } }
+      );
+      console.log("Tag sentiment set response:", response.data);
+
+      // Update local tag sentiment
+      setTags((prev) =>
+        prev.map((t) =>
+          t.tag === tagName ? { ...t, sentiment: sentimentValue } : t
+        )
+      );
+    } catch (e) {
+      console.error("Error setting tag sentiment:", e);
+    }
+  };
+
+  // --- Sentiment colors ---
   const sentimentColor =
     sentiment === "Positive"
       ? "bg-green-100 text-green-700"
@@ -93,67 +129,54 @@ const NewsCard: React.FC<NewsCardProps> = ({
           transition={{ duration: 0.4 }}
           className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow hover:shadow-xl transition-all"
         >
-          {/* Header */}
+          {/* --- Header --- */}
           <div className="flex flex-wrap justify-between items-center mb-4 gap-3">
             <div className="flex items-center gap-3 relative">
               <button
                 type="button"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onClick={() => setMainDropdownOpen(!mainDropdownOpen)}
                 className={`px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1 border ${sentimentColor} ${sentimentBorder}`}
               >
                 {sentiment}
                 <ChevronDown className="w-4 h-4" />
               </button>
 
-              {dropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -5 }}
-                  className="absolute top-9 left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-10 w-32"
-                >
-                  {sentimentOptions.map((option) => (
-                    <button
-                      key={option}
-                      className={`block w-full text-left px-3 py-2 text-sm rounded-lg ${
-                        option === sentiment
-                          ? "bg-gray-100 dark:bg-gray-700 font-medium"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
-                      onClick={() => handleSentimentChange(option)}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
+              <AnimatePresence>
+                {mainDropdownOpen && (
+                  <SentimentDropdown
+                    sentiment={sentiment}
+                    sentimentOptions={sentimentOptions}
+                    handleSentimentChange={handleSentimentChange}
+                  />
+                )}
+              </AnimatePresence>
             </div>
 
             <button
               type="button"
               onClick={handleVerify}
-              className={`border flex ${
+              className={`border flex items-center ${
                 verified
                   ? "text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
                   : "text-gray-600 border-gray-400 hover:bg-gray-600 hover:text-white"
-              } font-medium rounded-full text-xs p-2.5 transition-all duration-200`}
+              } font-medium rounded-full text-xs px-3 py-2 transition-all duration-200`}
             >
               {verified ? "Verified" : "Verify Me"}
               {verified && <Check className="w-3 h-3 ml-1" />}
             </button>
           </div>
 
-          {/* Headline */}
+          {/* --- Headline --- */}
           <h2 className="text-lg md:text-xl font-semibold mb-2 text-gray-900 dark:text-white">
             {article.headline}
           </h2>
 
-          {/* Summary */}
-          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-sm xl:text-base mb-4">
+          {/* --- Summary --- */}
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
             {article.article_summary}
           </p>
 
-          {/* Meta */}
+          {/* --- Meta Info --- */}
           <div className="text-gray-500 dark:text-gray-400 text-sm mb-6 flex flex-wrap items-center gap-x-3 gap-y-1">
             <span>
               By{" "}
@@ -165,16 +188,33 @@ const NewsCard: React.FC<NewsCardProps> = ({
             </span>
           </div>
 
-          {/* Tags */}
+          {/* --- Tags --- */}
           <div className="flex flex-wrap items-center gap-2 mb-6">
-            {tags.map((tag) => (
+            {tags.map((tagObj) => (
               <motion.div
-                key={tag}
+                key={tagObj.tag}
                 whileHover={{ scale: 1.05 }}
-                className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                className="relative bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
               >
-                {tag}
-                <button type="button" onClick={() => handleDeleteTag(tag)}>
+                <select
+                  className="bg-amber-100 rounded-xl text-xs"
+                  value={tagObj.sentiment}
+                  onChange={(e) =>
+                    handleIndividualTagSentiment(tagObj.tag, e.target.value)
+                  }
+                >
+                  <option value="">Sentiment</option>
+                  <option value="Positive">Positive</option>
+                  <option value="Neutral">Neutral</option>
+                  <option value="Negative">Negative</option>
+                </select>
+
+                <span>{tagObj.tag}</span>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeleteTag(tagObj.tag)}
+                >
                   <X className="w-4 h-4" />
                 </button>
               </motion.div>
@@ -191,7 +231,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
             </form>
           </div>
 
-          {/* Footer actions */}
+          {/* --- Footer --- */}
           <div className="flex justify-between items-center">
             <a
               href={article.url}

@@ -8,7 +8,7 @@ import Button from "../ui/button/Button";
 import axios from '../../api/axios'
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-
+import { getCsrfToken } from "../../utils/global";
 
 type dataType = {
     username: string;
@@ -36,7 +36,10 @@ export default function SignInForm() {
             username: data.username,
             password: data.password,
          },{
-            withCredentials:true,
+             withCredentials: true,
+                headers: {
+                    "X-CSRFToken": getCsrfToken(),
+                }
          }).then(async ()=>{
              await refresh();
              navigate('/dashboard')
