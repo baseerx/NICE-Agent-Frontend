@@ -72,8 +72,10 @@ const NewsCard: React.FC<NewsCardProps> = ({
 
   // --- Handle news delete ---
   const handleDeleteNews = () => {
-    setIsDeleted(true);
-    onDelete(article.article_id);
+   if(window.confirm("Are you sure you want to delete this article?")) {
+      setIsDeleted(true);
+      onDelete(article.article_id);
+    }
   };
 
   // --- Handle individual tag sentiment ---

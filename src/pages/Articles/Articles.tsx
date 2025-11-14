@@ -96,15 +96,7 @@ const Articles = () => {
       console.error("Failed to add tag:", err);
     }
   };
-  const handleSetIndividualSentiment = async (
-    articleId: number,
-    tagName: string,
-    sentiment: string
-  ) => {
-    console.log(
-      `Setting individual sentiment for article ${articleId}, tag ${tagName} to ${sentiment}`
-    );
-  };
+
   const handleRemoveTag = async (articleId: number, tagName: string) => {
     try {
       await axios.delete(`/articles/${articleId}/remove_tag/`, {
@@ -135,6 +127,7 @@ const Articles = () => {
           "X-CSRFToken": getCsrfToken(),
         },
       });
+
       setArticles((prev) => prev.filter((a) => a.article_id !== articleId));
     } catch (err) {
       console.error("Failed to delete article:", err);
@@ -161,7 +154,6 @@ const Articles = () => {
               key={a.article_id}
               article={a}
               onSentimentChange={handleSentimentChange}
-              setIndividualSentiment={handleSetIndividualSentiment}
               onVerify={handleVerify}
               onAddTag={handleAddTag}
               onRemoveTag={handleRemoveTag}
