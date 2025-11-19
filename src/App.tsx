@@ -22,6 +22,7 @@ import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { PublicRoute } from "./routes/PublicRoutes";
 import VerifiedArticles from "./pages/Articles/VerifiedArticles";
 import Articles from "./pages/Articles/Articles";
+import AddArticle from "./pages/Articles/AddArticle";
 export default function App() {
   return (
     <>
@@ -33,6 +34,7 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route index path="/" element={<Home />} />
               <Route index path="/articles" element={<Articles />} />
+              <Route index path="/add-article" element={<AddArticle />} />
               <Route index path="/dashboard" element={<Home />} />
 
               {/* Others Page */}
