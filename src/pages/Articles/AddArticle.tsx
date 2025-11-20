@@ -51,7 +51,6 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       sentiment: formData.sentiment,
       summary: formData.summary,
       local_or_international: "Local", // default, can be dynamic
-      article_unique_id: crypto.randomUUID(), // generate unique ID
       tags: formData.tags.split(",").map((t) => t.trim()), // optional
     };
 
