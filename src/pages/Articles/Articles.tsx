@@ -79,8 +79,8 @@ const Articles = () => {
           },
         }
       );
-      setArticles((prev) =>
-        prev.map((a) =>
+      setArticles((prev:any) =>
+        prev.map((a:any) =>
           a.article_id === articleId
             ? {
                 ...a,

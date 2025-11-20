@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { X, Trash2, ChevronDown, Check, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SentimentDropdown from "../ui/dropdown/SentimentDropdown";
-import { Article, Tag } from "../../types";
+import { Article } from "../../types";
 import axios from "../../api/axios";
 import { getCsrfToken } from "../../utils/global";
 
