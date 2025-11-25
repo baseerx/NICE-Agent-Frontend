@@ -7,7 +7,7 @@ import { getCsrfToken } from "../../utils/global";
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const pageSize = 3;
+  const pageSize = 6;
 
   useEffect(() => {
     fetchArticles();
