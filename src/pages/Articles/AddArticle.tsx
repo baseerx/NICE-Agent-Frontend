@@ -7,10 +7,11 @@ import DatePicker from "../../components/form/date-picker";
 import axios from "../../api/axios";
 import { getCsrfToken } from "../../utils/global";
 import { useNavigate } from "react-router-dom";
+import TextArea from "../../components/form/input/TextArea";
 type Props = {
   heading: string;
   sentiment: string;
-  summary: string;
+  summary: any;
   author: string;
   sourceOfNews: string;
   publishDate: string;
@@ -100,18 +101,6 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
         <div>
           <Input
-            type="textarea"
-            name="articleSummary"
-            value={formData.summary}
-            onChange={(e) =>
-              setFormData({ ...formData, summary: e.target.value })
-            }
-            placeholder="Article Summary"
-          />
-        </div>
-
-        <div>
-          <Input
             type="text"
             name="author"
             placeholder="Article Author"
@@ -168,6 +157,15 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             title="Enter tags separated by commas, e.g. tag1, tag2, tag3"
             pattern="^\s*[^,]+(?:\s*,\s*[^,]+)*\s*$"
             className="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900  dark:placeholder:text-white/30 dark:focus:border-brand-800 text-gray-800 dark:text-white/90"
+          />
+        </div>
+        <div>
+          <TextArea
+            value={formData.summary}
+            onChange={(val: string) => setFormData({ ...formData, summary: val })}
+            placeholder="Article Summary"
+            rows={5}
+            className="w-full"
           />
         </div>
         <div className="col-span-2 flex justify-center">

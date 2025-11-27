@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
 
-interface Option {
+export interface Option {
   value: string;
   text: string;
 }

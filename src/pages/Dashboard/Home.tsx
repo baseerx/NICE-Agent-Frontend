@@ -6,25 +6,30 @@ import axios from "../../api/axios";
 
 export default function Home() {
   const [newsSentimentData, setNewsSentimentData] = useState([]);
-//  const [tagsSentimentData, setTagsSentimentData] = useState([]);
+  const [topRepeatedTags, setTopRepeatedTags] = useState([]);
+
   useEffect(() => {
-      fetchNewsSentimentData();
-    //   fetchTagsSentimentData();
+    fetchNewsSentimentData();
+   
+    fetchTopRepeatedTagsData();
   }, []);
 
-   
-//     const fetchTagsSentimentData = async () => {
-//     try {
-//       const response = await axios.get("articles/top-tags-sentiment/");
-//     //   setTagsSentimentData(response.data);
-//     } catch (error) {
-//       console.error("Error fetching tags sentiment data:", error);
-//     }
-//   }
+
+
   const fetchNewsSentimentData = async () => {
     try {
       const response = await axios.get("articles/news-sources-sentiment/");
       setNewsSentimentData(response.data);
+    } catch (error) {
+      console.error("Error fetching news sentiment data:", error);
+    }
+  };
+
+  const fetchTopRepeatedTagsData = async () => {
+    try {
+      const response = await axios.get("articles/top-repeated-tags/");
+  
+      setTopRepeatedTags(response.data);
     } catch (error) {
       console.error("Error fetching news sentiment data:", error);
     }
@@ -43,13 +48,11 @@ export default function Home() {
           chartTitle="Sentiment Distribution by News Source"
         />
 
-        {/* <div className="mt-10">
-          <StatisticsChart
-            data={tagsSentimentData}
-            labelKey="tag_name"
-            chartTitle="Sentiment Distribution by Top 5 Tags"
-          />
-        </div> */}
+        <StatisticsChart
+          data={topRepeatedTags}
+          labelKey="tag_name"
+          chartTitle="Top Repeated Speakers"
+        />
       </MainCard>
     </>
   );

@@ -4,14 +4,26 @@ import axios from "../../api/axios";
 import { Article } from "../../types/index";
 import NewsCard from "../../components/cards/NewsCard";
 import { getCsrfToken } from "../../utils/global";
+import MultiSelect from "../../components/form/MultiSelect";
+import { Option } from "../../components/form/MultiSelect";
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [newsSources, setNewsSources] = useState<Option[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const pageSize = 6;
+  const [selectedSources, setSelectedSources] = useState<string[]>([]);
+  const pageSize = 8;
 
   useEffect(() => {
     fetchArticles();
+    getNewsSources();
   }, []);
+
+  useEffect(() => {
+    if (selectedSources.length !== 0) {
+      loadNewsPerSelection();
+    }
+  }, [selectedSources]);
+
   const fetchArticles = async () => {
     try {
       const response = await axios.get("/articles/get/");
@@ -19,6 +31,23 @@ const Articles = () => {
       setCurrentPage(0);
     } catch (error) {
       console.error("Error fetching articles:", error);
+    }
+  };
+
+  const loadNewsPerSelection = async () => {
+ 
+      setArticles(
+        articles.filter((article) => selectedSources.includes(article.source || ""))
+      );
+  
+  };
+
+  const getNewsSources = async () => {
+    try {
+      const response = await axios.get("/articles/sources/");
+      setNewsSources(response.data);
+    } catch (error) {
+      console.error("Error fetching news sources:", error);
     }
   };
 
@@ -79,8 +108,8 @@ const Articles = () => {
           },
         }
       );
-      setArticles((prev:any) =>
-        prev.map((a:any) =>
+      setArticles((prev: any) =>
+        prev.map((a: any) =>
           a.article_id === articleId
             ? {
                 ...a,
@@ -145,6 +174,14 @@ const Articles = () => {
 
   return (
     <MainCard cardtitle="Articles">
+      <div>
+        <MultiSelect
+          options={newsSources}
+          label="Filter by News Sources"
+          value={selectedSources}
+          onChange={(newSelected) => setSelectedSources(newSelected)}
+        />
+      </div>
       {articles.length === 0 ? (
         <div>Loading articles...</div>
       ) : (
