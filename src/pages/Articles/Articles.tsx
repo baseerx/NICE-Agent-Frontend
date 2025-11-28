@@ -6,11 +6,13 @@ import NewsCard from "../../components/cards/NewsCard";
 import { getCsrfToken } from "../../utils/global";
 import MultiSelect from "../../components/form/MultiSelect";
 import { Option } from "../../components/form/MultiSelect";
+import Loader from "../../components/common/Loader";
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [newsSources, setNewsSources] = useState<Option[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
+  const [loader, setLoader] = useState(false);
   const pageSize = 8;
 
   useEffect(() => {
@@ -21,25 +23,31 @@ const Articles = () => {
   useEffect(() => {
     if (selectedSources.length !== 0) {
       loadNewsPerSelection();
+    } else {
+      
+      fetchArticles();
     }
   }, [selectedSources]);
 
   const fetchArticles = async () => {
+    setLoader(true);
     try {
       const response = await axios.get("/articles/get/");
       setArticles(response.data);
       setCurrentPage(0);
+      setLoader(false);
     } catch (error) {
       console.error("Error fetching articles:", error);
+      setLoader(false);
     }
   };
 
   const loadNewsPerSelection = async () => {
- 
-      setArticles(
-        articles.filter((article) => selectedSources.includes(article.source || ""))
-      );
-  
+    setArticles(
+      articles.filter((article) =>
+        selectedSources.includes(article.source || "")
+      )
+    );
   };
 
   const getNewsSources = async () => {
@@ -183,7 +191,16 @@ const Articles = () => {
         />
       </div>
       {articles.length === 0 ? (
-        <div>Loading articles...</div>
+        <div className="flex items-center gap-2">
+            {loader ? (
+                <>
+                    <Loader />
+                    <span>Loading articles...</span>
+                </>
+            ) : (
+                <div>No articles found.</div>
+            )}
+        </div>
       ) : (
         <div className="flex flex-col gap-4">
           {pagedArticles.map((a) => (

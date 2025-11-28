@@ -63,7 +63,7 @@ const neutralData = data.map((item) =>
     },
     fill: { opacity: 1 },
     legend: { position: "top" },
-    colors: ["#28a745", "#dc3545", "#ffc107"],
+    colors: ["#28a745", "#dc3545", "#66C2FF"],
   };
 
   const series = [
