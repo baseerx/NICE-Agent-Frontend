@@ -78,27 +78,36 @@ export default function Home() {
         description="NICE Agentic AI Application Dashboard"
       />
 
-      <MainCard cardtitle="Analytics">
-        <div className="flex gap-6 justify-end items-center">
-          {loading && <Loader />}
-          <DatePicker
-            id="start-date"
-            label="Start Date"
-            placeholder="YYYY-MM-DD"
-            onChange={(selectedDates, dateStr) => {
-              console.log("Selected start date:", selectedDates);
-              setStartDate(dateStr);
-            }}
-          />
-          <DatePicker
-            id="end-date"
-            label="End Date"
-            placeholder="YYYY-MM-DD"
-            onChange={(selectedDates, dateStr) => {
-              console.log("Selected end date:", selectedDates);
-              setEndDate(dateStr);
-            }}
-          />
+      <MainCard cardtitle="Information">
+        <div className=" bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm flex justify-between gap-2 shadow-sm">
+          <div>
+            <span className="font-semibold text-blue-500">Dates of Analysis:</span>
+            <span>
+              {(startDate && endDate) && ` ${startDate} to ${endDate}`}
+              {(!startDate && !endDate) && ` Past 14 days data`}
+            </span>
+          </div>
+          <div>{loading && <Loader />}</div>
+          <div className="flex gap-2">
+            <DatePicker
+              id="start-date"
+              label="Start Date"
+              placeholder="YYYY-MM-DD"
+              onChange={(selectedDates, dateStr) => {
+                console.log("Selected start date:", selectedDates);
+                setStartDate(dateStr);
+              }}
+            />
+            <DatePicker
+              id="end-date"
+              label="End Date"
+              placeholder="YYYY-MM-DD"
+              onChange={(selectedDates, dateStr) => {
+                console.log("Selected end date:", selectedDates);
+                setEndDate(dateStr);
+              }}
+            />
+          </div>
         </div>
         <StatisticsChart
           data={newsSentimentData}
