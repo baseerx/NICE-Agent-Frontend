@@ -7,24 +7,32 @@ import { getCsrfToken } from "../../utils/global";
 import MultiSelect from "../../components/form/MultiSelect";
 import { Option } from "../../components/form/MultiSelect";
 import Loader from "../../components/common/Loader";
+import Select from "../../components/form/Select";
+
+type SingleOption = {
+  label: string;
+  value: string;
+};
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [newsSources, setNewsSources] = useState<Option[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
+  const source: SingleOption[] = [
+    { label: "Local", value: "local" },
+    { label: "International", value: "international" },
+  ];
   const [loader, setLoader] = useState(false);
   const pageSize = 8;
 
   useEffect(() => {
     fetchArticles();
-    getNewsSources();
   }, []);
 
   useEffect(() => {
     if (selectedSources.length !== 0) {
       loadNewsPerSelection();
     } else {
-      
       fetchArticles();
     }
   }, [selectedSources]);
@@ -50,9 +58,13 @@ const Articles = () => {
     );
   };
 
-  const getNewsSources = async () => {
+  const getNewsSources = async (value:string) => {
     try {
-      const response = await axios.get("/articles/sources/");
+        const response = await axios.post("/articles/sources/", { source: value }, {
+        headers: {
+          "X-CSRFToken": getCsrfToken(),
+        },
+        });
       setNewsSources(response.data);
     } catch (error) {
       console.error("Error fetching news sources:", error);
@@ -182,24 +194,33 @@ const Articles = () => {
 
   return (
     <MainCard cardtitle="Articles">
-      <div>
-        <MultiSelect
-          options={newsSources}
-          label="Filter by News Sources"
-          value={selectedSources}
-          onChange={(newSelected) => setSelectedSources(newSelected)}
-        />
+      <div className="flex justify-center items-center gap-3 w-full">
+        <div className="w-1/2">
+          <label htmlFor="localInternational">Local/International</label>
+          <Select
+            options={source}
+            onChange={(newSelected) => getNewsSources(newSelected)}
+          />
+        </div>
+        <div className="w-1/2">
+          <MultiSelect
+            options={newsSources}
+            label="Media Sources"
+            value={selectedSources}
+            onChange={(newSelected) => setSelectedSources(newSelected)}
+          />
+        </div>
       </div>
       {articles.length === 0 ? (
         <div className="flex items-center gap-2">
-            {loader ? (
-                <>
-                    <Loader />
-                    <span>Loading articles...</span>
-                </>
-            ) : (
-                <div>No articles found.</div>
-            )}
+          {loader ? (
+            <>
+              <Loader />
+              <span>Loading articles...</span>
+            </>
+          ) : (
+            <div>No articles found.</div>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-4">

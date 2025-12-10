@@ -48,7 +48,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ article,changeVerificationStatus })
                   onClick={()=>changeVerification(article.article_id)}
           className={`text-xs font-medium px-3 py-1 rounded-full bg-green-100 animate animate-pulse text-green-700 cursor-pointer`}
               >
-                  Verified
+                 change verification status
         </span>
       </div>
 
