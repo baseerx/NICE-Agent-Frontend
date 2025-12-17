@@ -6,6 +6,7 @@ import axios from "../../api/axios";
 import DatePicker from "../../components/form/date-picker";
 import { getCsrfToken } from "../../utils/global";
 import Loader from "../../components/common/Loader";
+import { Summary } from "../../types";
 
 export default function Home() {
   const [newsSentimentData, setNewsSentimentData] = useState([]);
@@ -13,9 +14,13 @@ export default function Home() {
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  useEffect(() => {
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+  const [combinedSummary, setCombinedSummary] = useState<Summary>({});
+  
+    useEffect(() => {
     fetchNewsSentimentData();
     fetchTopRepeatedTagsData();
+    fetchCombinedSummary();
   }, []);
 
   const fetchNewsSentimentData = async () => {
@@ -52,12 +57,37 @@ export default function Home() {
           },
         }
       );
-        
-        setLoading(false);
+
+      setLoading(false);
 
       setTopRepeatedTags(response.data);
     } catch (error) {
-        setLoading(false);
+      setLoading(false);
+      console.error("Error fetching news sentiment data:", error);
+    }
+  };
+    const fetchCombinedSummary = async () => {
+      setSentimentLoading(true);
+    try {
+      const response = await axios.post(
+        "articles/news-summary/",
+        {
+          start_date: startDate,
+          end_date: endDate,
+        },
+        {
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+          },
+        }
+      );
+        // console.log("Combined Summary Response:", response.data);
+
+      setSentimentLoading(false);
+
+      setCombinedSummary(response.data);
+    } catch (error) {
+      setSentimentLoading(false);
       console.error("Error fetching news sentiment data:", error);
     }
   };
@@ -66,8 +96,8 @@ export default function Home() {
     if (startDate && endDate) {
       setLoading(true);
       fetchNewsSentimentData();
-      fetchTopRepeatedTagsData();
-   
+        fetchTopRepeatedTagsData();
+        fetchCombinedSummary();
     }
   }, [startDate, endDate]);
 
@@ -81,10 +111,12 @@ export default function Home() {
       <MainCard cardtitle="Information">
         <div className=" bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm flex justify-between gap-2 shadow-sm">
           <div>
-            <span className="font-semibold text-blue-500">Dates of Analysis:</span>
-            <span>
-              {(startDate && endDate) && ` ${startDate} to ${endDate}`}
-              {(!startDate && !endDate) && ` Past 14 days data`}
+            <span className="font-semibold text-blue-500 text-xl">
+              Dates of Analysis:
+            </span>
+            <span className="text-lg">
+              {startDate && endDate && ` ${startDate} to ${endDate}`}
+              {!startDate && !endDate && ` Past 14 days data`}
             </span>
           </div>
           <div>{loading && <Loader />}</div>
@@ -109,6 +141,33 @@ export default function Home() {
             />
           </div>
         </div>
+        <div className=" bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm flex justify-between gap-2 shadow-sm">
+        <div className="flex flex-col gap-4 w-full">
+            <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-blue-500 text-lg md:text-xl">
+                        Overall Summary:
+                    </span>
+                    {sentimentLoading && <Loader />}
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {!sentimentLoading ? combinedSummary?.combined_summary : "N/A"}
+                </p>
+            </div>
+
+            <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-orange-500 text-lg">
+                        Overall Sentiment:
+                    </span>
+                    {sentimentLoading && <Loader />}
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {!sentimentLoading ? combinedSummary?.overall_sentiment : "N/A"}
+                </p>
+            </div>
+        </div>
+        </div>
         <StatisticsChart
           data={newsSentimentData}
           labelKey="source"
@@ -118,7 +177,7 @@ export default function Home() {
         <StatisticsChart
           data={topRepeatedTags}
           labelKey="tag_name"
-          chartTitle="Top Repeated Speakers"
+          chartTitle="Top Issues"
         />
       </MainCard>
     </>

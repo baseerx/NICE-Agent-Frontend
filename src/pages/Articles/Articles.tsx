@@ -40,7 +40,7 @@ const Articles = () => {
   const fetchArticles = async () => {
     setLoader(true);
     try {
-      const response = await axios.get("/articles/get/");
+        const response = await axios.get("/articles/get/");
       setArticles(response.data);
       setCurrentPage(0);
       setLoader(false);
@@ -181,7 +181,9 @@ const Articles = () => {
     } catch (err) {
       console.error("Failed to delete article:", err);
     }
-  };
+    };
+    
+ 
 
   const pageCount = Math.max(1, Math.ceil(articles.length / pageSize));
   const startIndex = currentPage * pageSize;
@@ -233,6 +235,7 @@ const Articles = () => {
               onAddTag={handleAddTag}
               onRemoveTag={handleRemoveTag}
               onDelete={handleDelete}
+              fetchArticles={fetchArticles}
             />
           ))}
 

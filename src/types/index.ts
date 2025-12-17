@@ -8,6 +8,26 @@ export type Article = {
   url?: string;
   image_url?: string;
   sentiment?: string;
-  article_summary?: string;
+    article_summary?: string;
+    quote_summary?: string;
+    quote_sentiment?: string;
   tags?: Tag[];
 };
+
+
+
+export type Summary = {
+    combined_summary?: string;
+    overall_sentiment?: string;
+    sentiment_breakdown?: {
+        positive: number;
+        negative: number;
+        neutral: number;
+    };
+    date_range?: {
+        earliest_date: string;
+        latest_date: string;
+    };
+    key_developments?: string[];
+};
+
