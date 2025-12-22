@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState,useEffect } from "react";
 import {
   X,
   Trash2,
@@ -59,9 +59,29 @@ const NewsCard: React.FC<NewsCardProps> = ({
   const [authorval, setAuthorval] = useState(article.author || "");
   const [showAuthorInput, setShowAuthorInput] = useState(false);
   const [newQuote, setNewQuote] = useState("");
-    const [quoteSentiment, setQuoteSentiment] = useState("");
-    const [quoteperson, setQuotePerson] = useState("");
+  const [quoteSentiment, setQuoteSentiment] = useState("");
+  const [quoteperson, setQuotePerson] = useState("");
+const [quoteSuggestions, setQuoteSuggestions] = useState<
+  { person_quoted: string }[]
+        >([]);
+    
+    
+    
+    useEffect(() => {
+      if (!quoteperson.trim()) {
+        setQuoteSuggestions([]);
+        setShowQuoteDropdown(false);
+        return;
+      }
 
+      const handler = setTimeout(() => {
+        fetchQuoteSuggestions(quoteperson);
+      }, 1000);
+
+      return () => clearTimeout(handler);
+    }, [quoteperson]);
+    
+const [showQuoteDropdown, setShowQuoteDropdown] = useState(false);
   const handleUpdateUrl = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -83,6 +103,24 @@ const NewsCard: React.FC<NewsCardProps> = ({
       console.error("Error updating URL:", err);
     }
   };
+
+ 
+
+  const fetchQuoteSuggestions = async (input: string) => {
+    try {
+      const response = await axios.get("/articles/quote-suggestions/", {
+        params: { quote_value: input },
+        withCredentials: true,
+        headers: { "X-CSRFToken": getCsrfToken() },
+      });
+
+      setQuoteSuggestions(response.data.persons || []);
+      setShowQuoteDropdown(true);
+    } catch (error) {
+      console.error("Error fetching quote suggestions:", error);
+    }
+  };
+
 
   const handleUpdateAuthor = async (e: React.FormEvent) => {
     setLoader(true);
@@ -193,19 +231,17 @@ const NewsCard: React.FC<NewsCardProps> = ({
     e.preventDefault();
     const quote = newQuote.trim();
     setQuoteLoader(true);
-      if (quote && quoteSentiment && quoteperson) {
-        console.log("inside quote add");
+    if (quote && quoteSentiment && quoteperson) {
       try {
-      await axios.post(
+        await axios.post(
           "/articles/add-quote/",
           {
             article_id: article.article_id,
             quote: quote,
-              sentiment: quoteSentiment,
-                person: quoteperson,
+            sentiment: quoteSentiment,
+            person: quoteperson,
           },
           {
-          
             headers: { "X-CSRFToken": getCsrfToken() },
           }
         );
@@ -218,8 +254,8 @@ const NewsCard: React.FC<NewsCardProps> = ({
         console.error("Error setting tag sentiment:", e);
       }
       setNewQuote("");
-          setQuoteSentiment("");
-          setQuotePerson("");
+      setQuoteSentiment("");
+      setQuotePerson("");
 
       setQuoteLoader(false);
     }
@@ -391,41 +427,61 @@ const NewsCard: React.FC<NewsCardProps> = ({
             </form>
           </div>
           <div className="my-4 border border-gray-300 dark:border-gray-700 rounded-2xl p-4 bg-gray-50 dark:bg-gray-800">
-          <form
-            onSubmit={handleAddQuote}
-            className="flex items-center flex-wrap gap-2 mb-4"
-          >
-            <textarea
-              placeholder="Add quote..."
-              value={newQuote}
-              onChange={(e) => setNewQuote(e.target.value)}
-              className="flex-1 min-w-[120px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <textarea
-                              placeholder="Person/Organization"
-                              value={quoteperson}
-                onChange={(e) => setQuotePerson(e.target.value)}
-              className="flex-1 min-w-[120px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <select
-              value={quoteSentiment}
-              onChange={(e) => setQuoteSentiment(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-full px-2 py-1 text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            <form
+              onSubmit={handleAddQuote}
+              className="flex items-center flex-wrap gap-2 mb-4"
             >
-              <option value="">Sentiment</option>
-              <option value="Positive">Positive</option>
-              <option value="Neutral">Neutral</option>
-              <option value="Negative">Negative</option>
-            </select>
-            <button
-              type="submit"
-              className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-medium disabled:opacity-50"
-              disabled={!newQuote.trim() || !quoteSentiment || quoteloader}
-            >
-              {quoteloader ? "Adding..." : "Add Quote"}
-            </button>
-                      </form>
-                      </div>
+              <textarea
+                placeholder="Add quote..."
+                value={newQuote}
+                onChange={(e) => setNewQuote(e.target.value)}
+                className="flex-1 min-w-[120px] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <div className="relative flex-1 min-w-[120px]">
+                <textarea
+                  placeholder="Person/Organization"
+                  value={quoteperson}
+                  onChange={(e) => setQuotePerson(e.target.value)}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+
+                {showQuoteDropdown && quoteSuggestions.length > 0 && (
+                  <ul className="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
+                    {quoteSuggestions.map((item, idx) => (
+                      <li
+                        key={idx}
+                        onClick={() => {
+                          setQuotePerson(item.person_quoted);
+                          setShowQuoteDropdown(false);
+                        }}
+                        className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        {item.person_quoted}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <select
+                value={quoteSentiment}
+                onChange={(e) => setQuoteSentiment(e.target.value)}
+                className="border border-gray-300 dark:border-gray-600 rounded-full px-2 py-1 text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">Sentiment</option>
+                <option value="Positive">Positive</option>
+                <option value="Neutral">Neutral</option>
+                <option value="Negative">Negative</option>
+              </select>
+              <button
+                type="submit"
+                className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-medium disabled:opacity-50"
+                disabled={!newQuote.trim() || !quoteSentiment || quoteloader}
+              >
+                {quoteloader ? "Adding..." : "Add Quote"}
+              </button>
+            </form>
+          </div>
           {/* --- Read More + Edit Field --- */}
           <div className="space-y-3">
             <AnimatePresence>
