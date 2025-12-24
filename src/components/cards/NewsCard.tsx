@@ -38,10 +38,11 @@ const NewsCard: React.FC<NewsCardProps> = ({
   const [sentiment, setSentiment] = useState(article.sentiment || "Neutral");
   const [mainDropdownOpen, setMainDropdownOpen] = useState(false);
   const [urlloader, setUrlLoader] = useState(false);
-  const [tags, setTags] = useState<{ tag: string; sentiment: string }[]>(
+  const [tags, setTags] = useState<{ tag: string; sentiment: string,category:string }[]>(
     article.tags?.map((t) => ({
       tag: t.tag_name,
-      sentiment: t.sentiment || "",
+        sentiment: t.sentiment || "",
+      category: t.category || "",
     })) || []
   );
 
@@ -160,7 +161,7 @@ const [showQuoteDropdown, setShowQuoteDropdown] = useState(false);
     e.preventDefault();
     const tag = newTag.trim();
     if (tag && !tags.some((t) => t.tag === tag)) {
-      const updatedTags = [...tags, { tag, sentiment: "" }];
+      const updatedTags = [...tags, { tag, sentiment: "",category:"" }];
       setTags(updatedTags);
       onAddTag(article.article_id, tag);
       setNewTag("");
@@ -180,7 +181,33 @@ const [showQuoteDropdown, setShowQuoteDropdown] = useState(false);
       setIsDeleted(true);
       onDelete(article.article_id);
     }
-  };
+    };
+    
+    const handleCategoryChange = async (tagName: string, categoryValue: string) => {
+        try {
+          await axios.post(
+            "/articles/set_tag_category/",
+            {
+              article_id: article.article_id,
+              tag: tagName,
+              category: categoryValue,
+            },
+            {
+              withCredentials: true,
+              headers: { "X-CSRFToken": getCsrfToken() },
+            }
+          );
+
+          setTags((prev) =>
+            prev.map((t) =>
+              t.tag === tagName ? { ...t, category: categoryValue } : t
+            )
+          );
+        } catch (e) {
+          console.error("Error setting tag sentiment:", e);
+        }
+     
+    }
 
   const handleUpdateSource = async (e: React.FormEvent) => {
     setLoader(true);
@@ -392,6 +419,17 @@ const [showQuoteDropdown, setShowQuoteDropdown] = useState(false);
                 whileHover={{ scale: 1.05 }}
                 className="relative bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
               >
+                <select
+                  className="bg-amber-100 rounded-xl text-xs"
+                  value={tagObj.category}
+                  onChange={(e) =>
+                    handleCategoryChange(tagObj.tag, e.target.value)
+                  }
+                >
+                  <option value="">Sentiment</option>
+                  <option value="Issue">Issue</option>
+                  <option value="Organization">Organization</option>
+                </select>
                 <select
                   className="bg-amber-100 rounded-xl text-xs"
                   value={tagObj.sentiment}
