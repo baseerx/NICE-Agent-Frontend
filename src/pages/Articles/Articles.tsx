@@ -27,12 +27,14 @@ const Articles = () => {
   ];
 
   const searchTimeoutRef = useRef<number | null>(null);
+  const focus=useRef<HTMLInputElement | null>(null);
 
   const [loader, setLoader] = useState(false);
   const pageSize = 8;
 
   useEffect(() => {
     fetchArticles();
+    focus.current?.focus();
   }, []);
 
 useEffect(() => {
@@ -244,7 +246,7 @@ useEffect(() => {
 
         <div className="flex justify-center items-center gap-4 relative">
 
-          <input type="text" onChange={(e) => handleSearch(e)} placeholder="Search.." name="verified_articles_search" id="verified_articles_search" className="py-4 w-1/2 bg-gray-100 px-4 rounded-xl" />
+          <input type="text" onChange={(e) => handleSearch(e)} ref={focus} placeholder="Search.." name="verified_articles_search" id="verified_articles_search" className="py-4 w-1/2 bg-gray-100 px-4 rounded-xl" />
           {loading && "Loading..."}
           {articles.length > 0 && (
             <div className="relative right-0 flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-lg font-bold text-xl">
