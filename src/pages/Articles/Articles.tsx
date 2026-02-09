@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import MainCard from "../../components/cards/MainCard";
 import axios from "../../api/axios";
 import { Article } from "../../types/index";
@@ -15,13 +15,19 @@ type SingleOption = {
 };
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
+
   const [newsSources, setNewsSources] = useState<Option[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const source: SingleOption[] = [
     { label: "Local", value: "local" },
     { label: "International", value: "international" },
   ];
+
+  const searchTimeoutRef = useRef<number | null>(null);
+
   const [loader, setLoader] = useState(false);
   const pageSize = 8;
 
@@ -29,19 +35,28 @@ const Articles = () => {
     fetchArticles();
   }, []);
 
-  useEffect(() => {
-    if (selectedSources.length !== 0) {
-      loadNewsPerSelection();
-    } else {
-      fetchArticles();
-    }
-  }, [selectedSources]);
+useEffect(() => {
+  if (selectedSources.length === 0) {
+    setArticles(allArticles);
+  } 
+ 
+  else {
+    setArticles(
+      allArticles.filter((a) =>
+        selectedSources.includes(a.source || "")
+      )
+    );
+  }
+  setCurrentPage(0);
+}, [selectedSources, allArticles]);
+
 
   const fetchArticles = async () => {
     setLoader(true);
     try {
-        const response = await axios.get("/articles/get/");
+      const response = await axios.get("/articles/get/");
       setArticles(response.data);
+      setAllArticles(response.data);
       setCurrentPage(0);
       setLoader(false);
     } catch (error) {
@@ -50,21 +65,15 @@ const Articles = () => {
     }
   };
 
-  const loadNewsPerSelection = async () => {
-    setArticles(
-      articles.filter((article) =>
-        selectedSources.includes(article.source || "")
-      )
-    );
-  };
 
-  const getNewsSources = async (value:string) => {
+
+  const getNewsSources = async (value: string) => {
     try {
-        const response = await axios.post("/articles/sources/", { source: value }, {
+      const response = await axios.post("/articles/sources/", { source: value }, {
         headers: {
           "X-CSRFToken": getCsrfToken(),
         },
-        });
+      });
       setNewsSources(response.data);
     } catch (error) {
       console.error("Error fetching news sources:", error);
@@ -132,12 +141,12 @@ const Articles = () => {
         prev.map((a: any) =>
           a.article_id === articleId
             ? {
-                ...a,
-                tags: [
-                  ...(a.tags || []),
-                  { tag_id: Date.now(), tag_name: newTag },
-                ],
-              }
+              ...a,
+              tags: [
+                ...(a.tags || []),
+                { tag_id: Date.now(), tag_name: newTag },
+              ],
+            }
             : a
         )
       );
@@ -158,9 +167,9 @@ const Articles = () => {
         prev.map((a) =>
           a.article_id === articleId
             ? {
-                ...a,
-                tags: a.tags?.filter((t) => t.tag_name !== tagName) || [],
-              }
+              ...a,
+              tags: a.tags?.filter((t) => t.tag_name !== tagName) || [],
+            }
             : a
         )
       );
@@ -181,9 +190,9 @@ const Articles = () => {
     } catch (err) {
       console.error("Failed to delete article:", err);
     }
-    };
-    
- 
+  };
+
+
 
   const pageCount = Math.max(1, Math.ceil(articles.length / pageSize));
   const startIndex = currentPage * pageSize;
@@ -192,10 +201,58 @@ const Articles = () => {
   const goPrev = () => setCurrentPage((p) => Math.max(0, p - 1));
   const goNext = () => setCurrentPage((p) => Math.min(pageCount - 1, p + 1));
   const goTo = (i: number) =>
-    setCurrentPage(() => Math.max(0, Math.min(pageCount - 1, i)));
+  setCurrentPage(() => Math.max(0, Math.min(pageCount - 1, i)));
+
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const value = e.target.value;
+
+  if (searchTimeoutRef.current) {
+    clearTimeout(searchTimeoutRef.current);
+  }
+
+  if (!value.trim()) {
+    setArticles(allArticles);
+    setLoading(false);
+    return;
+  }
+
+  setLoading(true);
+
+  searchTimeoutRef.current = setTimeout(async () => {
+    try {
+      const response = await axios.get(
+        `/articles/search/?q=${encodeURIComponent(value.trim())}`,
+        {
+          headers: { "X-CSRFToken": getCsrfToken() },
+        }
+      );
+      setArticles(response.data || []);
+      setCurrentPage(0);
+    } catch (err) {
+      console.error("Error searching articles:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, 3000);
+};
+
 
   return (
     <MainCard cardtitle="Articles">
+      <div>
+
+        <div className="flex justify-center items-center gap-4 relative">
+
+          <input type="text" onChange={(e) => handleSearch(e)} placeholder="Search.." name="verified_articles_search" id="verified_articles_search" className="py-4 w-1/2 bg-gray-100 px-4 rounded-xl" />
+          {loading && "Loading..."}
+          {articles.length > 0 && (
+            <div className="relative right-0 flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-lg font-bold text-xl">
+              {articles.length}
+            </div>
+          )}
+        </div>
+      </div>
       <div className="flex justify-center items-center gap-3 w-full">
         <div className="w-1/2">
           <label htmlFor="localInternational">Local/International</label>
@@ -244,11 +301,10 @@ const Articles = () => {
             <button
               onClick={goPrev}
               disabled={currentPage === 0}
-              className={`px-4 py-2 rounded-lg font-semibold ${
-                currentPage === 0
+              className={`px-4 py-2 rounded-lg font-semibold ${currentPage === 0
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-white border shadow hover:bg-gray-50"
-              }`}
+                }`}
             >
               Prev
             </button>
@@ -259,11 +315,10 @@ const Articles = () => {
                 <button
                   key={i}
                   onClick={() => goTo(i)}
-                  className={`min-w-[40px] px-3 py-2 rounded-lg font-semibold ${
-                    active
+                  className={`min-w-[40px] px-3 py-2 rounded-lg font-semibold ${active
                       ? "bg-blue-600 text-white shadow"
                       : "bg-white text-gray-700 border hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   {i + 1}
                 </button>
@@ -273,11 +328,10 @@ const Articles = () => {
             <button
               onClick={goNext}
               disabled={currentPage >= pageCount - 1}
-              className={`px-4 py-2 rounded-lg font-semibold ${
-                currentPage >= pageCount - 1
+              className={`px-4 py-2 rounded-lg font-semibold ${currentPage >= pageCount - 1
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-white border shadow hover:bg-gray-50"
-              }`}
+                }`}
             >
               Next
             </button>
