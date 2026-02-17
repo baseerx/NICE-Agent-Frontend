@@ -22,14 +22,14 @@ const Slider = () => {
         title="Slider - NICE Agentic AI Application Dashboard"
         description="NICE Agentic AI Application Dashboard"
       />
-      <button
+   
+      <MainCard cardtitle="Power Sector News">
+   <button
         onClick={() => navigate(-1)}
-        className="px-4 py-2 bg-blue-500 text-white rounded"
+        className="px-4 m-2 py-2 bg-blue-500 text-white rounded"
       >
         Go Back
       </button>
-      <MainCard cardtitle="Power Sector News">
-
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           slidesPerView={1}
