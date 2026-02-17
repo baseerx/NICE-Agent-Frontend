@@ -177,7 +177,7 @@ export default function Home() {
         <StatisticsChart
           data={topRepeatedTags}
           labelKey="tag_name"
-          chartTitle="Top Issues"
+          chartTitle="Top Issues/Organizations"
         />
       </MainCard>
     </>

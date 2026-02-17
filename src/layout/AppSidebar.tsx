@@ -27,7 +27,7 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Analytics", path: "/", pro: false }],
+    subItems: [{ name: "Analytics (Unverified)", path: "/", pro: false },{ name: "Analytics (Verified)", path: "/verified-insights", pro: false },{ name: "Slider", path: "/slider", pro: false }],
   },
   {
     icon: <GridIcon />,
