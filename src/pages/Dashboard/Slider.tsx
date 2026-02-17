@@ -3,7 +3,7 @@ import MainCard from "../../components/cards/MainCard";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
-
+import { useNavigate } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -15,15 +15,21 @@ const Slider = () => {
     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
     "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1600&q=80",
   ];
-
+  const navigate = useNavigate();
   return (
     <>
       <PageMeta
         title="Slider - NICE Agentic AI Application Dashboard"
         description="NICE Agentic AI Application Dashboard"
       />
-
+      <button
+        onClick={() => navigate(-1)}
+        className="px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        Go Back
+      </button>
       <MainCard cardtitle="Power Sector News">
+
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           slidesPerView={1}
