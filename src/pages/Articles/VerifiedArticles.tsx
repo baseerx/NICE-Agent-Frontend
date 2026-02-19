@@ -10,7 +10,7 @@ const VerifiedArticles = () => {
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(false);
-  const pageSize = 3; // number of articles per page
+  const pageSize = 7; // number of articles per page
     const searchTimeoutRef = useRef<number | null>(null);
     const focus=useRef<HTMLInputElement | null>(null);
   useEffect(() => {
