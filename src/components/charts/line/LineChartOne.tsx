@@ -1,120 +1,82 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 
-export default function LineChartOne() {
-  const options: ApexOptions = {
-    legend: {
-      show: false, // Hide legend
-      position: "top",
-      horizontalAlign: "left",
-    },
-    colors: ["#465FFF", "#9CB9FF"], // Define line colors
-    chart: {
-      fontFamily: "Outfit, sans-serif",
-      height: 310,
-      type: "line", // Set the chart type to 'line'
-      toolbar: {
-        show: false, // Hide chart toolbar
-      },
-    },
-    stroke: {
-      curve: "straight", // Define the line style (straight, smooth, or step)
-      width: [2, 2], // Line width for each dataset
-    },
+interface TrendData {
+  person_quoted: string;
+  month_year: string;
+  positive: number;
+  negative: number;
+}
 
-    fill: {
-      type: "gradient",
-      gradient: {
-        opacityFrom: 0.55,
-        opacityTo: 0,
-      },
+interface Props {
+  data: TrendData[];
+}
+
+export default function MinisterTrendChart({ data }: Props) {
+  const categories = data.map((item) => item.month_year);
+  const positiveData = data.map((item) => item.positive);
+  const negativeData = data.map((item) => item.negative);
+
+  const personName =
+    data.length > 0
+      ? data[0].person_quoted
+      : "Federal Minister Sardar Awais Ahmad Khan Leghari";
+
+  const options: ApexOptions = {
+    chart: {
+      type: "line",
+      height: 350,
+      toolbar: { show: false },
+      fontFamily: "Outfit, sans-serif",
     },
-    markers: {
-      size: 0, // Size of the marker points
-      strokeColors: "#fff", // Marker border color
-      strokeWidth: 2,
-      hover: {
-        size: 6, // Marker size on hover
-      },
+    title: {
+      text: `${personName} - Monthly Sentiment Trend`,
+      align: "left",
     },
-    grid: {
-      xaxis: {
-        lines: {
-          show: false, // Hide grid lines on x-axis
-        },
-      },
-      yaxis: {
-        lines: {
-          show: true, // Show grid lines on y-axis
-        },
-      },
+    legend: {
+      show: true,
+      position: "top",
+    },
+    colors: ["#16a34a", "#dc2626"], // Green = Positive, Red = Negative
+    stroke: {
+      curve: "smooth",
+      width: 3,
     },
     dataLabels: {
-      enabled: false, // Disable data labels
+      enabled: false,
     },
-    tooltip: {
-      enabled: true, // Enable tooltip
-      x: {
-        format: "dd MMM yyyy", // Format for x-axis tooltip
+    grid: {
+      yaxis: {
+        lines: { show: true },
       },
     },
     xaxis: {
-      type: "category", // Category-based x-axis
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-      axisBorder: {
-        show: false, // Hide x-axis border
-      },
-      axisTicks: {
-        show: false, // Hide x-axis ticks
-      },
-      tooltip: {
-        enabled: false, // Disable tooltip for x-axis points
-      },
+      categories: categories,
+      title: { text: "Month-Year" },
     },
     yaxis: {
-      labels: {
-        style: {
-          fontSize: "12px", // Adjust font size for y-axis labels
-          colors: ["#6B7280"], // Color of the labels
-        },
-      },
-      title: {
-        text: "", // Remove y-axis title
-        style: {
-          fontSize: "0px",
-        },
-      },
+      title: { text: "Number of Quotes" },
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
     },
   };
 
   const series = [
     {
-      name: "Sales",
-      data: [180, 190, 170, 160, 175, 165, 170, 205, 230, 210, 240, 235],
+      name: "Positive Sentiment",
+      data: positiveData,
     },
     {
-      name: "Revenue",
-      data: [40, 30, 50, 40, 55, 40, 70, 100, 110, 120, 150, 140],
+      name: "Negative Sentiment",
+      data: negativeData,
     },
   ];
+
   return (
-    <div className="max-w-full overflow-x-auto custom-scrollbar">
-      <div id="chartEight" className="min-w-[1000px]">
-        <Chart options={options} series={series} type="area" height={310} />
-      </div>
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mt-6">
+      <Chart options={options} series={series} type="line" height={350} />
     </div>
   );
 }

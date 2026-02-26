@@ -5,8 +5,8 @@ type StatisticsChartProps = {
   data: {
     [key: string]: string | number;
   }[];
-  labelKey: string; // <-- Dynamically choose source or tag_name
-  chartTitle: string; // <-- Dynamic title
+  labelKey: string;
+  chartTitle: string;
 };
 
 export default function StatisticsChart({
@@ -18,18 +18,36 @@ export default function StatisticsChart({
     return <p>Loading sentiment chart...</p>;
   }
 
-  const categories = data.map((item) => item[labelKey] as string);
+  /**
+   * Store full labels (for tooltip)
+   */
+  const fullLabels: string[] = data.map((item) =>
+    String(item[labelKey] ?? "")
+  );
 
-const positiveData = data.map((item) =>
-  Number(item.positive ?? item.positive_percentage)
-);
-const negativeData = data.map((item) =>
-  Number(item.negative ?? item.negative_percentage)
-);
-const neutralData = data.map((item) =>
-  Number(item.neutral ?? item.neutral_percentage)
-);
+  /**
+   * Truncate long labels for chart display
+   */
+  const categories: string[] = fullLabels.map((label) =>
+    label.length > 40 ? label.substring(0, 40) + "..." : label
+  );
 
+  /**
+   * Support BOTH API formats:
+   * 1) positive / negative / neutral
+   * 2) positive_percentage / negative_percentage / neutral_percentage
+   */
+  const positiveData: number[] = data.map((item) =>
+    Number(item.positive_percentage ?? item.positive ?? 0)
+  );
+
+  const negativeData: number[] = data.map((item) =>
+    Number(item.negative_percentage ?? item.negative ?? 0)
+  );
+
+  const neutralData: number[] = data.map((item) =>
+    Number(item.neutral_percentage ?? item.neutral ?? 0)
+  );
 
   const options: ApexOptions = {
     chart: {
@@ -46,9 +64,12 @@ const neutralData = data.map((item) =>
     },
     dataLabels: {
       enabled: true,
-      formatter: (val) => `${val}%`,
+      formatter: (val: number) => `${val}%`,
     },
-    stroke: { width: 1, colors: ["#fff"] },
+    stroke: {
+      width: 1,
+      colors: ["#fff"],
+    },
     xaxis: {
       categories: categories,
       title: { text: "Percentage (%)" },
@@ -58,18 +79,36 @@ const neutralData = data.map((item) =>
     },
     tooltip: {
       y: {
-        formatter: (val) => `${val}%`,
+        formatter: (val: number) => `${val}%`,
+      },
+      x: {
+        formatter: function (_val: number, opts: any) {
+          return fullLabels[opts.dataPointIndex];
+        },
       },
     },
-    fill: { opacity: 1 },
-    legend: { position: "top" },
+    fill: {
+      opacity: 1,
+    },
+    legend: {
+      position: "top",
+    },
     colors: ["#28a745", "#dc3545", "#66C2FF"],
   };
 
   const series = [
-    { name: "Positive", data: positiveData },
-    { name: "Negative", data: negativeData },
-    { name: "Neutral", data: neutralData },
+    {
+      name: "Positive",
+      data: positiveData,
+    },
+    {
+      name: "Negative",
+      data: negativeData,
+    },
+    {
+      name: "Neutral",
+      data: neutralData,
+    },
   ];
 
   return (
@@ -87,7 +126,12 @@ const neutralData = data.map((item) =>
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[1000px] xl:min-w-full">
-          <Chart options={options} series={series} type="bar" height={350} />
+          <Chart
+            options={options}
+            series={series}
+            type="bar"
+            height={350}
+          />
         </div>
       </div>
     </div>
