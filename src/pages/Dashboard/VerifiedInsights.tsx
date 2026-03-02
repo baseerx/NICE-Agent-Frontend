@@ -162,7 +162,7 @@ export default function VerifiedInsights() {
           labelKey="tag_name"
           chartTitle="Top Issues/Organizations in Verified News"
         />
-        {/* <StatisticsChart
+        <StatisticsChart
           data={topThreePersons}
           labelKey="person_quoted"
           chartTitle="Top Repeated Persons in Verified News"
@@ -172,7 +172,7 @@ export default function VerifiedInsights() {
           data={topRepeatedQuotes}
           labelKey="quote_summary"
           chartTitle="Top Repeated Quotes in Verified News"
-        /> */}
+        />
 <MinisterTrendChart data={ministerTrendData} />
 
 
