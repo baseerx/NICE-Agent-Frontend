@@ -32,7 +32,7 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-                        <Route index path="/slider" element={<Slider />} />
+          <Route index path="/slider" element={<Slider />} />
           <Route element={<AppLayout />}>
             <Route element={<ProtectedRoute />}>
               <Route index path="/" element={<Home />} />

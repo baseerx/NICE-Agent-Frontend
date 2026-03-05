@@ -165,13 +165,13 @@ export default function VerifiedInsights() {
         <StatisticsChart
           data={topThreePersons}
           labelKey="person_quoted"
-          chartTitle="Top Repeated Persons in Verified News"
+          chartTitle="Top Voices"
         />
 
         <StatisticsChart
           data={topRepeatedQuotes}
           labelKey="quote_summary"
-          chartTitle="Top Repeated Quotes in Verified News"
+          chartTitle="Top Quotes"
         />
 <MinisterTrendChart data={ministerTrendData} />
 

@@ -16,8 +16,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [sentimentLoading, setSentimentLoading] = useState(false);
   const [combinedSummary, setCombinedSummary] = useState<Summary>({});
-  
-    useEffect(() => {
+
+  useEffect(() => {
     fetchNewsSentimentData();
     fetchTopRepeatedTagsData();
     fetchCombinedSummary();
@@ -66,8 +66,8 @@ export default function Home() {
       console.error("Error fetching news sentiment data:", error);
     }
   };
-    const fetchCombinedSummary = async () => {
-      setSentimentLoading(true);
+  const fetchCombinedSummary = async () => {
+    setSentimentLoading(true);
     try {
       const response = await axios.post(
         "articles/news-summary/",
@@ -81,7 +81,7 @@ export default function Home() {
           },
         }
       );
-        // console.log("Combined Summary Response:", response.data);
+      // console.log("Combined Summary Response:", response.data);
 
       setSentimentLoading(false);
 
@@ -96,8 +96,8 @@ export default function Home() {
     if (startDate && endDate) {
       setLoading(true);
       fetchNewsSentimentData();
-        fetchTopRepeatedTagsData();
-        fetchCombinedSummary();
+      fetchTopRepeatedTagsData();
+      fetchCombinedSummary();
     }
   }, [startDate, endDate]);
 
@@ -142,31 +142,31 @@ export default function Home() {
           </div>
         </div>
         <div className=" bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm flex justify-between gap-2 shadow-sm">
-        <div className="flex flex-col gap-4 w-full">
+          <div className="flex flex-col gap-4 w-full">
             <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-blue-500 text-lg md:text-xl">
-                        Overall Summary:
-                    </span>
-                    {sentimentLoading && <Loader />}
-                </div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {!sentimentLoading ? combinedSummary?.combined_summary : "N/A"}
-                </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-blue-500 text-lg md:text-xl">
+                  Overall Summary:
+                </span>
+                {sentimentLoading && <Loader />}
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {!sentimentLoading ? combinedSummary?.combined_summary : "N/A"}
+              </p>
             </div>
 
             <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-orange-500 text-lg">
-                        Overall Sentiment:
-                    </span>
-                    {sentimentLoading && <Loader />}
-                </div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {!sentimentLoading ? combinedSummary?.overall_sentiment : "N/A"}
-                </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-orange-500 text-lg">
+                  Overall Sentiment:
+                </span>
+                {sentimentLoading && <Loader />}
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {!sentimentLoading ? combinedSummary?.overall_sentiment : "N/A"}
+              </p>
             </div>
-        </div>
+          </div>
         </div>
         <StatisticsChart
           data={newsSentimentData}
