@@ -21,7 +21,8 @@ interface NewsCardProps {
   onAddTag: (articleId: number, tag: string) => void;
   onRemoveTag: (articleId: number, tag: string) => void;
   onDelete: (articleId: number) => void;
-  fetchArticles: () => void;
+  // fetchArticles: () => void;
+  onUpdateUrl: (articleId: number, url: string) => void;
 }
 
 const sentimentOptions = ["Positive", "Neutral", "Negative"];
@@ -32,7 +33,8 @@ const NewsCard: React.FC<NewsCardProps> = ({
   onVerify,
   onAddTag,
   onRemoveTag,
-  fetchArticles,
+  // fetchArticles,
+  onUpdateUrl,
   onDelete,
 }) => {
   const [sentiment, setSentiment] = useState(article.sentiment || "Neutral");
@@ -53,7 +55,7 @@ const NewsCard: React.FC<NewsCardProps> = ({
   // --- Read More Edit ---
   const [isEditingReadMore, setIsEditingReadMore] = useState(false);
   const [showSourceInput, setShowSourceInput] = useState(false);
-  const [editUrl, setEditUrl] = useState(article.url);
+  const [editUrl, setEditUrl] = useState(article.url || "");
   const [sourceval, setSourceval] = useState(article.source || "");
   const [quoteloader, setQuoteLoader] = useState(false);
   //handle  Author Edit (not implemented yet)
@@ -83,28 +85,31 @@ const [quoteSuggestions, setQuoteSuggestions] = useState<
     }, [quoteperson]);
     
 const [showQuoteDropdown, setShowQuoteDropdown] = useState(false);
-  const handleUpdateUrl = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    setUrlLoader(true);
-    // Dummy API example
-    try {
-      await axios.put(
-        "/articles/update_url/",
-        {
-          article_id: article.article_id,
-          url: editUrl,
-        },
-        { headers: { "X-CSRFToken": getCsrfToken() }, withCredentials: true }
-      );
-      fetchArticles();
-      setUrlLoader(false);
-      setIsEditingReadMore(false);
-    } catch (err) {
-      console.error("Error updating URL:", err);
-    }
-  };
+const handleUpdateUrl = async (e: React.FormEvent) => {
+  e.preventDefault();
 
+  setUrlLoader(true);
+
+  try {
+    await axios.put(
+      "/articles/update_url/",
+      {
+        article_id: article.article_id,
+        url: editUrl,
+      },
+      { headers: { "X-CSRFToken": getCsrfToken() }, withCredentials: true }
+    );
+
+    // fetchArticles();
+    onUpdateUrl(article.article_id, editUrl || "");
+    setUrlLoader(false);
+    setIsEditingReadMore(false);
+
+  } catch (err) {
+    console.error("Error updating URL:", err);
+  }
+};
  
 
   const fetchQuoteSuggestions = async (input: string) => {
@@ -135,7 +140,8 @@ const [showQuoteDropdown, setShowQuoteDropdown] = useState(false);
         },
         { headers: { "X-CSRFToken": getCsrfToken() }, withCredentials: true }
       );
-      fetchArticles();
+      // fetchArticles();
+
       setShowAuthorInput(false);
       setLoader(false);
     } catch (err) {
@@ -221,7 +227,7 @@ const [showQuoteDropdown, setShowQuoteDropdown] = useState(false);
         },
         { headers: { "X-CSRFToken": getCsrfToken() }, withCredentials: true }
       );
-      fetchArticles();
+      // fetchArticles();
       setShowSourceInput(false);
       setLoader(false);
     } catch (err) {

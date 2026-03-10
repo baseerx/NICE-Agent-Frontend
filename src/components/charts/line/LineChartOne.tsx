@@ -3,9 +3,14 @@ import { ApexOptions } from "apexcharts";
 
 interface TrendData {
   person_quoted: string;
-  month_year: string;
+  week_start: string;
+  week_number: number;
+  year: number;
   positive: number;
   negative: number;
+  total_quotes: number;
+  positive_percentage: number;
+  negative_percentage: number;
 }
 
 interface Props {
@@ -13,14 +18,28 @@ interface Props {
 }
 
 export default function MinisterTrendChart({ data }: Props) {
-  const categories = data.map((item) => item.month_year);
-  const positiveData = data.map((item) => item.positive);
-  const negativeData = data.map((item) => item.negative);
+  // Group data by week number and year, summing sentiments
+  const groupedByWeek = new Map<string, TrendData>();
+  
+  data.forEach((item) => {
+    const key = `${item.year}-W${item.week_number}`;
+    if (groupedByWeek.has(key)) {
+      const existing = groupedByWeek.get(key)!;
+      existing.positive += item.positive;
+      existing.negative += item.negative;
+      existing.total_quotes += item.total_quotes;
+    } else {
+      groupedByWeek.set(key, { ...item });
+    }
+  });
 
-  const personName =
-    data.length > 0
-      ? data[0].person_quoted
-      : "Federal Minister Sardar Awais Ahmad Khan Leghari";
+  const sortedWeeks = Array.from(groupedByWeek.values()).sort(
+    (a, b) => a.week_number - b.week_number || a.year - b.year
+  );
+
+  const categories = sortedWeeks.map((item) => `W${item.week_number} ${item.year}`);
+  const positiveData = sortedWeeks.map((item) => item.positive);
+  const negativeData = sortedWeeks.map((item) => item.negative);
 
   const options: ApexOptions = {
     chart: {
@@ -30,14 +49,14 @@ export default function MinisterTrendChart({ data }: Props) {
       fontFamily: "Outfit, sans-serif",
     },
     title: {
-      text: `${personName} - Monthly Sentiment Trend`,
+      text: data[0]?.person_quoted || "Weekly Sentiment Trend",
       align: "left",
     },
     legend: {
       show: true,
       position: "top",
     },
-    colors: ["#16a34a", "#dc2626"], // Green = Positive, Red = Negative
+    colors: ["#16a34a", "#dc2626"],
     stroke: {
       curve: "smooth",
       width: 3,
@@ -52,10 +71,10 @@ export default function MinisterTrendChart({ data }: Props) {
     },
     xaxis: {
       categories: categories,
-      title: { text: "Month-Year" },
+      title: { text: "Week" },
     },
     yaxis: {
-      title: { text: "Number of Quotes" },
+      title: { text: "Sentiment Count" },
     },
     tooltip: {
       shared: true,

@@ -160,7 +160,7 @@ export default function VerifiedInsights() {
         <StatisticsChart
           data={topRepeatedTags}
           labelKey="tag_name"
-          chartTitle="Top Issues/Organizations in Verified News"
+          chartTitle="Top Issues"
         />
         <StatisticsChart
           data={topThreePersons}

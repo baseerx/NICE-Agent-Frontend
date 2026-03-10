@@ -49,7 +49,8 @@ useEffect(() => {
       )
     );
   }
-  setCurrentPage(0);
+  // alert("Source filter applied. Articles updated.");
+  // setCurrentPage(0);
 }, [selectedSources, allArticles]);
 
 
@@ -194,7 +195,20 @@ useEffect(() => {
     }
   };
 
+  
+  const handleUpdateUrlLocal = (articleId: number, newUrl: string) => {
+    setArticles((prev) =>
+      prev.map((a) =>
+        a.article_id === articleId ? { ...a, url: newUrl } : a
+      )
+    );
 
+    setAllArticles((prev) =>
+      prev.map((a) =>
+        a.article_id === articleId ? { ...a, url: newUrl } : a
+      )
+    );
+  };
 
   const pageCount = Math.max(1, Math.ceil(articles.length / pageSize));
   const startIndex = currentPage * pageSize;
@@ -294,7 +308,9 @@ useEffect(() => {
               onAddTag={handleAddTag}
               onRemoveTag={handleRemoveTag}
               onDelete={handleDelete}
-              fetchArticles={fetchArticles}
+              // fetchArticles={fetchArticles}
+              onUpdateUrl={handleUpdateUrlLocal}
+
             />
           ))}
 
