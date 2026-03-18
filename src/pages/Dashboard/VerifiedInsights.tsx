@@ -66,7 +66,7 @@ export default function VerifiedInsights() {
     try {
       const response = await axios.get(
         "articles/get-awais-monthly-sentiment-trend/",
-        
+
         { headers: { "X-CSRFToken": getCsrfToken() } }
       );
       console.log("Minister Trend Data Response:", response.data);
@@ -173,7 +173,7 @@ export default function VerifiedInsights() {
           labelKey="quote_summary"
           chartTitle="Top Quotes"
         />
-<MinisterTrendChart data={ministerTrendData} />
+        <MinisterTrendChart data={ministerTrendData} />
 
 
       </MainCard>

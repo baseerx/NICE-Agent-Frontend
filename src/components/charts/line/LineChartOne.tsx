@@ -6,6 +6,8 @@ interface TrendData {
   week_start: string;
   week_number: number;
   year: number;
+  month_name: string;    // <-- added
+  month_number: number;  // <-- added
   positive: number;
   negative: number;
   total_quotes: number;
@@ -13,16 +15,18 @@ interface TrendData {
   negative_percentage: number;
 }
 
+
 interface Props {
   data: TrendData[];
 }
 
 export default function MinisterTrendChart({ data }: Props) {
+ 
   // Group data by week number and year, summing sentiments
   const groupedByWeek = new Map<string, TrendData>();
-  
+
   data.forEach((item) => {
-    const key = `${item.year}-W${item.week_number}`;
+    const key = `${item.year}-W${item.week_number}(${item.month_name})`;
     if (groupedByWeek.has(key)) {
       const existing = groupedByWeek.get(key)!;
       existing.positive += item.positive;
@@ -37,7 +41,7 @@ export default function MinisterTrendChart({ data }: Props) {
     (a, b) => a.week_number - b.week_number || a.year - b.year
   );
 
-  const categories = sortedWeeks.map((item) => `W${item.week_number} ${item.year}`);
+  const categories = sortedWeeks.map((item) => `W${item.week_number} (${item.month_name}) ${item.year}`);
   const positiveData = sortedWeeks.map((item) => item.positive);
   const negativeData = sortedWeeks.map((item) => item.negative);
 

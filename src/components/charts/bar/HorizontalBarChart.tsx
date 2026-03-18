@@ -2,9 +2,7 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 
 type StatisticsChartProps = {
-  data: {
-    [key: string]: string | number;
-  }[];
+  data: { [key: string]: string | number }[];
   labelKey: string;
   chartTitle: string;
 };
@@ -18,41 +16,28 @@ export default function StatisticsChart({
     return <p>Loading sentiment chart...</p>;
   }
 
-  /**
-   * Store full labels (for tooltip)
-   */
-  const fullLabels: string[] = data.map((item) =>
-    String(item[labelKey] ?? "")
-  );
-
-  /**
-   * Truncate long labels for chart display
-   */
-  const categories: string[] = fullLabels.map((label) =>
+  const fullLabels = data.map((item) => String(item[labelKey] ?? ""));
+  const categories = fullLabels.map((label) =>
     label.length > 40 ? label.substring(0, 40) + "..." : label
   );
 
-  /**
-   * Support BOTH API formats:
-   * 1) positive / negative / neutral
-   * 2) positive_percentage / negative_percentage / neutral_percentage
-   */
-  const positiveData: number[] = data.map((item) =>
+  const positiveData = data.map((item) =>
     Number(item.positive_percentage ?? item.positive ?? 0)
   );
-
-  const negativeData: number[] = data.map((item) =>
+  const negativeData = data.map((item) =>
     Number(item.negative_percentage ?? item.negative ?? 0)
   );
-
-  const neutralData: number[] = data.map((item) =>
+  const neutralData = data.map((item) =>
     Number(item.neutral_percentage ?? item.neutral ?? 0)
   );
+
+  // Dynamic height: 80px per item, minimum 350px
+  const chartHeight = Math.max(80 * data.length, 350);
 
   const options: ApexOptions = {
     chart: {
       type: "bar",
-      height: 350,
+      height: chartHeight,
       stacked: true,
       toolbar: { show: false },
     },
@@ -71,45 +56,32 @@ export default function StatisticsChart({
       colors: ["#fff"],
     },
     xaxis: {
-      categories: categories,
+      categories,
       title: { text: "Percentage (%)" },
     },
     yaxis: {
       title: { text: chartTitle },
     },
     tooltip: {
-      y: {
-        formatter: (val: number) => `${val}%`,
-      },
+      y: { formatter: (val: number) => `${val}%` },
       x: {
-        formatter: function (_val: number, opts: any) {
-          return fullLabels[opts.dataPointIndex];
-        },
+        formatter: (_val: number, opts: any) => fullLabels[opts.dataPointIndex],
       },
     },
-    fill: {
-      opacity: 1,
-    },
-    legend: {
-      position: "top",
-    },
+    fill: { opacity: 1 },
+    legend: { position: "top" },
     colors: ["#28a745", "#dc3545", "#66C2FF"],
   };
 
   const series = [
-    {
-      name: "Positive",
-      data: positiveData,
-    },
-    {
-      name: "Negative",
-      data: negativeData,
-    },
-    {
-      name: "Neutral",
-      data: neutralData,
-    },
+    { name: "Positive", data: positiveData },
+    { name: "Negative", data: negativeData },
+    { name: "Neutral", data: neutralData },
   ];
+
+  const chartKey = JSON.stringify(
+    fullLabels.concat(series.flatMap((s) => s.data.map(String)))
+  );
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
@@ -125,12 +97,13 @@ export default function StatisticsChart({
       </div>
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
-        <div className="min-w-[1000px] xl:min-w-full">
+        <div className="min-w-[600px]">
           <Chart
+            key={chartKey}
             options={options}
             series={series}
             type="bar"
-            height={350}
+            height={chartHeight}
           />
         </div>
       </div>
