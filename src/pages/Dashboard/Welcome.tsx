@@ -22,14 +22,11 @@ const VideoFullScreen = () => {
           Go Back
         </button>
 
-        {/* FULLSCREEN VIDEO */}
-        <video
-          src="/videos/ismo_welcome.mp4" // place your video in public/videos
+        {/* FULLSCREEN GIF */}
+        <img
+          src="/videos/welcome_ismo.gif"
+          alt="Welcome"
           className="absolute inset-0 w-full h-full object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
         />
       </div>
     </>
