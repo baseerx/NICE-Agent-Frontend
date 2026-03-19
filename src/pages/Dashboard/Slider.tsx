@@ -20,13 +20,11 @@ const Slider = () => {
   const navigate = useNavigate();
   const [slides, setSlides] = useState<SliderItem[]>([]);
 
-  // Fetch dynamic sliders from backend
   const fetchSliders = async () => {
     try {
       const res = await axios.get("/slider/");
       const data = res.data.map((s: SliderItem) => ({
         ...s,
-        // ensure absolute URL
         image: s.image.startsWith("http")
           ? s.image
           : `${window.location.origin}${s.image}`,
@@ -49,7 +47,8 @@ const Slider = () => {
       />
 
       {/* FULL SCREEN WRAPPER */}
-      <div className="h-screen w-screen overflow-hidden bg-black relative">
+      <div className="h-screen w-screen bg-black relative overflow-hidden">
+        
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -58,7 +57,6 @@ const Slider = () => {
           Go Back
         </button>
 
-        {/* SWIPER FULLSCREEN */}
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           slidesPerView={1}
@@ -69,47 +67,33 @@ const Slider = () => {
           className="h-full w-full"
         >
           {slides.map((slide) => (
-            <SwiperSlide key={slide.id} className="h-screen w-screen relative">
-              {/* Background Image */}
-              <img
-                src={slide.image}
-                alt={slide.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center px-6">
-                {/* <h2
+            <SwiperSlide key={slide.id} className="h-full w-full flex items-center justify-center">
+              
+              {/* Image Wrapper */}
+              <div className="w-full h-full flex items-center justify-center bg-black">
+                
+                {/* IMAGE (NO CROP) */}
+                <img
+                  src={slide.image}
+                  alt={slide.title}
                   className="
-                  text-white 
-                  font-bold 
-                  leading-tight
-                  text-3xl 
-                  sm:text-5xl 
-                  md:text-6xl 
-                  lg:text-7xl 
-                  xl:text-8xl 
-                  2xl:text-9xl
-                "
-                >
-                  {slide.title}
-                </h2>
-
-                <p
-                  className="
-                  text-white 
-                  mt-6
-                  max-w-4xl
-                  text-sm 
-                  sm:text-lg 
-                  md:text-xl 
-                  lg:text-2xl 
-                  xl:text-3xl
-                "
-                >
-                  {slide.description}
-                </p> */}
+                    max-w-full 
+                    max-h-full 
+                    object-contain 
+                    transition-transform duration-700
+                    hover:scale-105
+                  "
+                />
               </div>
+
+              {/* Optional Overlay (if needed later) */}
+              {/* 
+              <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6">
+                <h2 className="text-white text-4xl font-bold">{slide.title}</h2>
+                <p className="text-white mt-4">{slide.description}</p>
+              </div> 
+              */}
+
             </SwiperSlide>
           ))}
 
