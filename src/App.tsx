@@ -26,6 +26,7 @@ import AddArticle from "./pages/Articles/AddArticle";
 import VerifiedInsights from "./pages/Dashboard/VerifiedInsights";
 import Slider from "./pages/Dashboard/Slider";
 import Welcome from "./pages/Dashboard/Welcome";
+import SliderForm from "./pages/Forms/SliderForm";
 export default function App() {
   return (
     <>
@@ -35,9 +36,11 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route index path="/slider" element={<Slider />} />
           <Route index path="/welcome" element={<Welcome />} />
+          
           <Route element={<AppLayout />}>
             <Route element={<ProtectedRoute />}>
               <Route index path="/" element={<Home />} />
+              <Route index path="/slider-form" element={<SliderForm />} />
               <Route index path="/verified-insights" element={<VerifiedInsights />} />
 
               <Route index path="/articles" element={<Articles />} />

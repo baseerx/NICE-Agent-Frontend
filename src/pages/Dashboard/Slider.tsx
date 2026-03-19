@@ -1,88 +1,45 @@
+import React, { useEffect, useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { useNavigate } from "react-router-dom";
-
-import FirstImg from "../../assets/images/slider/1.jpg";
-import SecondImg from "../../assets/images/slider/2.jpg";
-import ThirdImg from "../../assets/images/slider/3.jpg";
-import FourthImg from "../../assets/images/slider/4.jpg";
-import FifthImg from "../../assets/images/slider/5.jpg";
-import SixthImg from "../../assets/images/slider/6.jpg";
-import SeventhImg from "../../assets/images/slider/7.jpg";
-import EighthImg from "../../assets/images/slider/8.jpg";
-import NinthImg from "../../assets/images/slider/9.jpg";
-import TenthImg from "../../assets/images/slider/10.jpg";
+import axios from "../../api/axios";
 
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+type SliderItem = {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+};
+
 const Slider = () => {
   const navigate = useNavigate();
+  const [slides, setSlides] = useState<SliderItem[]>([]);
 
-  const slides = [
-    {
-      image: FirstImg,
-      title: "Renewable Energy Expansion",
-      description:
-        "Investment in solar and wind power continues to reshape the power sector landscape.",
-    },
-    {
-      image: SecondImg,
-      title: "Grid Modernization Initiatives",
-      description:
-        "Advanced smart grid technologies are improving reliability and efficiency.",
-    },
-    {
-      image: ThirdImg,
-      title: "Energy Market Reforms",
-      description:
-        "Policy reforms are driving competitive electricity markets and transparency.",
-    },
-    {
-      image: FourthImg,
-      title: "Sustainable Power Planning",
-      description:
-        "Data-driven planning ensures long-term sustainability in power generation.",
-    },
-    {
-      image: FifthImg,
-      title: "Decarbonization Efforts",
-      description:
-        "Power companies are accelerating efforts to reduce carbon emissions.",
-    },
-    {
-      image: SixthImg,
-      title: "Energy Storage Solutions",
-      description:
-        "Innovative storage technologies are enhancing grid stability and flexibility.",
-    },
-    {
-      image: SeventhImg,
-      title: "Digital Transformation",
-      description:
-        "AI and IoT are revolutionizing operations and maintenance in the power sector.",
-    },
-    {
-      image: EighthImg,
-      title: "Electric Vehicle Integration",
-      description:
-        "The rise of EVs is creating new opportunities and challenges for the grid.",
-    },
-    {
-      image: NinthImg,
-      title: "Resilience and Disaster Recovery",
-      description:
-        "Power companies are investing in infrastructure to withstand extreme weather events.",
-    },
-    {
-      image: TenthImg,
-      title: "Global Energy Transition",
-      description:
-        "International collaboration is accelerating the shift towards a sustainable energy future.",
-    },
-  ];
+  // Fetch dynamic sliders from backend
+  const fetchSliders = async () => {
+    try {
+      const res = await axios.get("/slider/");
+      const data = res.data.map((s: SliderItem) => ({
+        ...s,
+        // ensure absolute URL
+        image: s.image.startsWith("http")
+          ? s.image
+          : `${window.location.origin}${s.image}`,
+      }));
+      setSlides(data);
+    } catch (err) {
+      console.error("Failed to fetch sliders:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSliders();
+  }, []);
 
   return (
     <>
@@ -93,7 +50,6 @@ const Slider = () => {
 
       {/* FULL SCREEN WRAPPER */}
       <div className="h-screen w-screen overflow-hidden bg-black relative">
-
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -113,19 +69,18 @@ const Slider = () => {
           className="h-full w-full"
         >
           {slides.map((slide, index) => (
-            <SwiperSlide key={index} className="h-screen w-screen relative">
-
+            <SwiperSlide key={slide.id} className="h-screen w-screen relative">
               {/* Background Image */}
               <img
                 src={slide.image}
-                alt={`Slide ${index + 1}`}
+                alt={slide.title}
                 className="absolute inset-0 w-full h-full object-cover"
               />
 
               {/* Overlay */}
               <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center px-6">
-
-                <h2 className="
+                {/* <h2
+                  className="
                   text-white 
                   font-bold 
                   leading-tight
@@ -135,11 +90,13 @@ const Slider = () => {
                   lg:text-7xl 
                   xl:text-8xl 
                   2xl:text-9xl
-                ">
+                "
+                >
                   {slide.title}
                 </h2>
 
-                <p className="
+                <p
+                  className="
                   text-white 
                   mt-6
                   max-w-4xl
@@ -148,13 +105,19 @@ const Slider = () => {
                   md:text-xl 
                   lg:text-2xl 
                   xl:text-3xl
-                ">
+                "
+                >
                   {slide.description}
-                </p>
-
+                </p> */}
               </div>
             </SwiperSlide>
           ))}
+
+          {slides.length === 0 && (
+            <SwiperSlide className="h-screen w-screen flex items-center justify-center">
+              <p className="text-white text-xl">Loading slides...</p>
+            </SwiperSlide>
+          )}
         </Swiper>
       </div>
     </>
