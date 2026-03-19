@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -68,7 +68,7 @@ const Slider = () => {
           loop
           className="h-full w-full"
         >
-          {slides.map((slide, index) => (
+          {slides.map((slide) => (
             <SwiperSlide key={slide.id} className="h-screen w-screen relative">
               {/* Background Image */}
               <img
