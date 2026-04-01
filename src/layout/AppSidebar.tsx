@@ -242,7 +242,7 @@ const AppSidebar: React.FC = () => {
               <ul className="mt-2 space-y-1 ml-9">
                 {nav.subItems
                   .filter((subItem) => {
-                    if ((subItem.name === "Slider Form" || subItem.name === "Slider") && user?.username !== "baseer") {
+                    if ((subItem.name === "Slider Form" || subItem.name === "Slider" || subItem.name === "WelcomePage") && user?.username !== "baseer") {
                       return false;
                     }
                     return true;
