@@ -241,7 +241,12 @@ const AppSidebar: React.FC = () => {
             >
               <ul className="mt-2 space-y-1 ml-9">
                 {nav.subItems
-                  .filter((subItem) => !(subItem.name === "Slider Form" && user?.username !== "baseer"))
+                  .filter((subItem) => {
+                    if ((subItem.name === "Slider Form" || subItem.name === "Slider") && user?.username !== "baseer") {
+                      return false;
+                    }
+                    return true;
+                  })
                   .map((subItem) => (
                   <li key={subItem.name}>
                     <Link

@@ -52,7 +52,7 @@ const Slider = () => {
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-6 left-6 text-xs z-50 px-3 py-1 bg-transparent hover:bg-black/10 text-black rounded-lg shadow-sm transition"
+          className="absolute top-6 left-6 text-xs z-50 px-3 py-1 bg-gray-300 hover:bg-black/10 text-black rounded-lg shadow-sm transition"
         >
           Back
         </button>
