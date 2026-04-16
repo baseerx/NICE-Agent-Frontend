@@ -38,8 +38,10 @@ export default function MinisterTrendChart({ data }: Props) {
   });
 
   const sortedWeeks = Array.from(groupedByWeek.values()).sort(
-    (a, b) => a.week_number - b.week_number || a.year - b.year
-  );
+  (a, b) =>
+    new Date(a.week_start).getTime() -
+    new Date(b.week_start).getTime()
+);
 
   const categories = sortedWeeks.map((item) => `W${item.week_number} (${item.month_name}) ${item.year}`);
   const positiveData = sortedWeeks.map((item) => item.positive);

@@ -1,30 +1,31 @@
 import MainCard from "../../components/cards/MainCard";
-import { useEffect, useState,useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "../../api/axios";
-import { Article } from "../../types/index";
+import { Article } from "../../types";
 import VerifiedNewsCard from "../../components/cards/VerifiedNewsCard";
 import { getCsrfToken } from "../../utils/global";
 
 const VerifiedArticles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [allArticles, setAllArticles] = useState<Article[]>([]);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const pageSize = 7; // number of articles per page
-    const searchTimeoutRef = useRef<number | null>(null);
-    const focus=useRef<HTMLInputElement | null>(null);
-  useEffect(() => {
+  const [search, setSearch] = useState("");
 
-    fetchVerifiedArticles();
+  const pageSize = 7;
+  const searchTimeoutRef = useRef<number | null>(null);
+  const focus = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    fetchArticles(1, "");
     focus.current?.focus();
   }, []);
-  const changeVerificationStatus = async (articleId: number) => {
+
+  const fetchArticles = async (page = 1, searchQuery = "") => {
+    setLoading(true);
     try {
-      await axios.put(
-        `/articles/${articleId}/unverify/`,
-        {
-          verification_status: "Pending",
-        },
+      const response = await axios.get(
+        `/articles/verified/?page=${page}&page_size=${pageSize}&q=${encodeURIComponent(searchQuery)}`,
         {
           headers: {
             "X-CSRFToken": getCsrfToken(),
@@ -32,140 +33,119 @@ const VerifiedArticles = () => {
         }
       );
 
-    } catch (err) {
-      console.error("Failed to verify article:", err);
-    }
-    setArticles((prev) => prev.filter((a) => a.article_id !== articleId));
-  };
-  const fetchVerifiedArticles = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get("/articles/verified/", {
-        headers: {
-          "X-CSRFToken": getCsrfToken(),
-        },
-      });
-
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        setArticles(response.data);
-        setAllArticles(response.data);
-        setCurrentPage(0);
-      } else {
-        setArticles([]);
-      }
+      setArticles(response.data.results);
+      setTotal(response.data.total);
+      setCurrentPage(page);
     } catch (error) {
-      console.error("Error fetching verified articles:", error);
+      console.error("Error fetching articles:", error);
     } finally {
       setLoading(false);
     }
   };
+
   const handleSearch = (e: any) => {
-    const value = e.target.value.trim();
-    setLoading(true);
+    const value = e.target.value;
+    setSearch(value);
+
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        if (value === "") {
-          setArticles(allArticles);
-          return;
-        }
-        const response = await axios.get(`/articles/verified-search/?q=${encodeURIComponent(value)}`, {
-          headers: {
-            "X-CSRFToken": getCsrfToken(),
-          },
-        });
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          setArticles(response.data);
-          setCurrentPage(0);
-        } else {
-          setArticles([]);
-        }
-      } catch (err) {
-        console.error("Error searching verified articles:", err);
-      } finally {
-        setLoading(false);
-      }
-    }, 5000);
-  };
-  // Pagination calculations
-  const pageCount = Math.max(1, Math.ceil(articles.length / pageSize));
-  const startIndex = currentPage * pageSize;
-  const pagedArticles = articles.slice(startIndex, startIndex + pageSize);
 
-  const goPrev = () => setCurrentPage((p) => Math.max(0, p - 1));
-  const goNext = () => setCurrentPage((p) => Math.min(pageCount - 1, p + 1));
-  const goTo = (i: number) =>
-    setCurrentPage(() => Math.max(0, Math.min(pageCount - 1, i)));
+    searchTimeoutRef.current = window.setTimeout(() => {
+      fetchArticles(1, value);
+    }, 500);
+  };
+
+  const totalPages = Math.ceil(total / pageSize);
+
+  const goNext = () => {
+    if (currentPage < totalPages) {
+      fetchArticles(currentPage + 1, search);
+    }
+  };
+
+  const goPrev = () => {
+    if (currentPage > 1) {
+      fetchArticles(currentPage - 1, search);
+    }
+  };
+
+  const goTo = (page: number) => {
+    fetchArticles(page, search);
+  };
+
+  const changeVerificationStatus = async (articleId: number) => {
+    try {
+      await axios.put(
+        `/articles/${articleId}/unverify/`,
+        { verification_status: "Pending" },
+        { headers: { "X-CSRFToken": getCsrfToken() } }
+      );
+
+      setArticles((prev) => prev.filter((a) => a.article_id !== articleId));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <MainCard cardtitle="Verified Articles">
-      <div className="flex justify-center items-center gap-4 relative">
+      <div className="flex justify-center items-center gap-4">
+        <input
+          ref={focus}
+          type="text"
+          value={search}
+          onChange={handleSearch}
+          placeholder="Search..."
+          className="py-4 w-1/2 bg-gray-100 px-4 rounded-xl"
+        />
 
-        <input type="text" onChange={(e) => handleSearch(e)} ref={focus} placeholder="Search.." name="verified_articles_search" id="verified_articles_search" className="py-4 w-1/2 bg-gray-100 px-4 rounded-xl" />
-        {loading && "Loading..."}
-        {articles.length > 0 && (
-          <div className="relative right-0 flex items-center justify-center w-16 h-16 bg-blue-600 text-white rounded-full shadow-lg font-bold text-xl">
-            {articles.length}
-          </div>
-        )}
+        {loading && <span>Loading...</span>}
+
+        <div className="w-16 h-16 font-bold text-xl flex items-center justify-center bg-blue-600 text-white rounded-full">
+          {total}
+        </div>
       </div>
 
       {articles.length === 0 ? (
-        <p>No verified articles available.</p>
+        <p>Verified articles loading...</p>
       ) : (
-        <div className="flex flex-col gap-4">
-          {/* Display paginated verified articles */}
-          {pagedArticles.map((article) => (
-            <VerifiedNewsCard
-              changeVerificationStatus={changeVerificationStatus}
-              key={article.article_id}
-              article={article}
-            />
-          ))}
+        <>
+          <div className="flex flex-col gap-4 mt-4">
+            {articles.map((article) => (
+              <VerifiedNewsCard
+                key={article.article_id}
+                article={article}
+                changeVerificationStatus={changeVerificationStatus}
+              />
+            ))}
+          </div>
 
-          {/* Pagination Controls */}
-          <div className="flex gap-2 items-center justify-center mt-4 flex-wrap">
-            <button
-              onClick={goPrev}
-              disabled={currentPage === 0}
-              className={`px-4 py-2 rounded-lg font-semibold ${currentPage === 0
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-white border shadow hover:bg-gray-50"
-                }`}
-            >
+          {/* Pagination */}
+          <div className="flex gap-2 justify-center mt-6 flex-wrap">
+            <button onClick={goPrev} disabled={currentPage === 1}>
               Prev
             </button>
 
-            {Array.from({ length: pageCount }).map((_, i) => {
-              const active = i === currentPage;
-              return (
-                <button
-                  key={i}
-                  onClick={() => goTo(i)}
-                  className={`min-w-[40px] px-3 py-2 rounded-lg font-semibold ${active
-                    ? "bg-blue-600 text-white shadow"
-                    : "bg-white text-gray-700 border hover:bg-gray-50"
-                    }`}
-                >
-                  {i + 1}
-                </button>
-              );
-            })}
-
-            <button
-              onClick={goNext}
-              disabled={currentPage >= pageCount - 1}
-              className={`px-4 py-2 rounded-lg font-semibold ${currentPage >= pageCount - 1
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-white border shadow hover:bg-gray-50"
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+              key={i}
+              onClick={() => goTo(i + 1)}
+              className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-md 
+                ${currentPage === i + 1 
+                ? "bg-blue-600 text-white font-bold shadow-lg transform scale-110" 
+                : "bg-white text-gray-700 hover:bg-blue-100 hover:shadow-lg hover:-translate-y-0.5"
                 }`}
-            >
+              >
+              {i + 1}
+              </button>
+            ))}
+
+            <button onClick={goNext} disabled={currentPage === totalPages}>
               Next
             </button>
           </div>
-        </div>
+        </>
       )}
     </MainCard>
   );

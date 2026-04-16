@@ -168,6 +168,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+        
         <StatisticsChart
           data={newsSentimentData}
           labelKey="source"

@@ -29,5 +29,6 @@ export type Summary = {
         latest_date: string;
     };
     key_developments?: string[];
+      // ✅ add this
 };
 

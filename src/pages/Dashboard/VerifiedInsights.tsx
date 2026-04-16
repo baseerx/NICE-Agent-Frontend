@@ -15,12 +15,13 @@ export default function VerifiedInsights() {
   const [topThreePersons, setTopThreePersons] = useState([]);
   const [topRepeatedQuotes, setTopRepeatedQuotes] = useState([]);
   const [ministerTrendData, setMinisterTrendData] = useState([]);
+  const [ismoTrendData, setIsmoTrendData] = useState([]);
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-    const [sentimentLoading, setSentimentLoading] = useState(false);
-    const [combinedSummary, setCombinedSummary] = useState<Summary>({});
-  
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+  const [combinedSummary, setCombinedSummary] = useState<Summary>({});
+
 
   const hasInitialized = useRef(false);
 
@@ -33,40 +34,46 @@ export default function VerifiedInsights() {
       getTopThreePersons();
       getTopRepeatedQuotes();
       fetchMinisterTrendData();
+      fetchIsmoTrendData();
       fetchCombinedSummary();
     }
   }, []);
-
-
-
-
 
 
   // Fetch data when dates change
   useEffect(() => {
     if (startDate && endDate) {
       setLoading(true);
-      Promise.all([fetchNewsSentimentData(), fetchTopRepeatedTagsData(), getTopRepeatedQuotes(), fetchMinisterTrendData()]).finally(
+      Promise.all([fetchNewsSentimentData(), fetchTopRepeatedTagsData(), getTopThreePersons(), getTopRepeatedQuotes(), fetchMinisterTrendData(), fetchIsmoTrendData()]).finally(
         () => setLoading(false)
       );
     }
   }, [startDate, endDate]);
 
-  const getTopThreePersons = useCallback(async () => {
+  const getTopThreePersons = async () => {
     try {
-      const response = await axios.get("articles/get-top-three-persons/", {
-        headers: { "X-CSRFToken": getCsrfToken() },
-      });
+      const response = await axios.post(
+        "articles/get-top-three-persons/",
+        {
+          start_date: startDate,
+          end_date: endDate,
+        },
+        {
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+          },
+        }
+      );
+
       console.log("Top Three Persons Response:", response.data);
       setTopThreePersons(response.data);
-
     } catch (error) {
       console.error("Error fetching top three persons:", error);
     }
-  }, []);
+  };
 
 
-    const fetchCombinedSummary = async () => {
+  const fetchCombinedSummary = async () => {
     setSentimentLoading(true);
     try {
       const response = await axios.post(
@@ -81,7 +88,7 @@ export default function VerifiedInsights() {
           },
         }
       );
-      // console.log("Combined Summary Response:", response.data);
+      console.log("Combined Summary Response:", response.data);
 
       setSentimentLoading(false);
 
@@ -93,23 +100,49 @@ export default function VerifiedInsights() {
   };
 
 
-  const fetchMinisterTrendData = useCallback(async () => {
+  const fetchMinisterTrendData = async () => {
     try {
-      const response = await axios.get(
+      const response = await axios.post(
         "articles/get-awais-monthly-sentiment-trend/",
-
-        { headers: { "X-CSRFToken": getCsrfToken() } }
+        {
+          start_date: startDate,
+          end_date: endDate,
+        },
+        {
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+          },
+        }
       );
-      console.log("Minister Trend Data Response:", response.data);
+
+      // console.log("Minister Trend Data Response:", response.data);
       setMinisterTrendData(response.data);
     } catch (error) {
       console.error("Error fetching minister trend data:", error);
     }
-  }, []);
+  };
 
+  const fetchIsmoTrendData = async () => {
+    try {
+      const response = await axios.post(
+        "articles/get-ismo-monthly-sentiment-trend/",
+        {
+          start_date: startDate,
+          end_date: endDate,
+        },
+        {
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+          },
+        }
+      );
 
-
-
+      // console.log("Ismo Trend Data Response:", response.data);
+      setIsmoTrendData(response.data);
+    } catch (error) {
+      console.error("Error fetching ismo trend data:", error);
+    }
+  };
 
   const getTopRepeatedQuotes = useCallback(async () => {
     try {
@@ -181,7 +214,7 @@ export default function VerifiedInsights() {
             />
           </div>
         </div>
-  <div className=" bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm flex justify-between gap-2 shadow-sm">
+        <div className=" bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm flex justify-between gap-2 shadow-sm">
           <div className="flex flex-col gap-4 w-full">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 flex-wrap">
@@ -231,6 +264,7 @@ export default function VerifiedInsights() {
           chartTitle="Top Quotes"
         />
         <MinisterTrendChart data={ministerTrendData} />
+        <MinisterTrendChart data={ismoTrendData} />
 
 
       </MainCard>
