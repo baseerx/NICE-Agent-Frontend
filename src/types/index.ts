@@ -1,4 +1,4 @@
-export type Tag = { tag_id: number; tag_name: string,sentiment:string,category:string };
+export type Tag = { tag_id: number; tag_name: string, sentiment: string, category: string };
 export type Article = {
   article_id: number;
   headline: string;
@@ -8,27 +8,27 @@ export type Article = {
   url?: string;
   image_url?: string;
   sentiment?: string;
-    article_summary?: string;
-    quote_summary?: string;
-    quote_sentiment?: string;
+  article_summary?: string;
+  quote_summary?: string;
+  quote_sentiment?: string;
   tags?: Tag[];
 };
 
 
 
 export type Summary = {
-    combined_summary?: string;
-    overall_sentiment?: string;
-    sentiment_breakdown?: {
-        positive: number;
-        negative: number;
-        neutral: number;
-    };
-    date_range?: {
-        earliest_date: string;
-        latest_date: string;
-    };
-    key_developments?: string[];
-      // ✅ add this
+  combined_summary?: string;
+  overall_sentiment?: string;
+  sentiment_breakdown?: {
+    positive: number;
+    negative: number;
+    neutral: number;
+  };
+  date_range?: {
+    earliest_date: string;
+    latest_date: string;
+  };
+  key_developments?: string[];
+  // ✅ add this
 };
 

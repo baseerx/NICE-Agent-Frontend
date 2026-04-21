@@ -8,6 +8,7 @@ import { getCsrfToken } from "../../utils/global";
 import Loader from "../../components/common/Loader";
 import MinisterTrendChart from "../../components/charts/line/LineChartOne";
 import { Summary } from "../../types";
+import TopQuotesBarChart from "../../components/charts/bar/TopQuotesBarChart";
 
 export default function VerifiedInsights() {
   const [newsSentimentData, setNewsSentimentData] = useState([]);
@@ -76,19 +77,14 @@ export default function VerifiedInsights() {
   const fetchCombinedSummary = async () => {
     setSentimentLoading(true);
     try {
-      const response = await axios.post(
+      const response = await axios.get(
         "articles/news-summary/",
-        {
-          start_date: startDate,
-          end_date: endDate,
-        },
         {
           headers: {
             "X-CSRFToken": getCsrfToken(),
           },
         }
       );
-      console.log("Combined Summary Response:", response.data);
 
       setSentimentLoading(false);
 
@@ -258,7 +254,7 @@ export default function VerifiedInsights() {
           chartTitle="Top Voices"
         />
 
-        <StatisticsChart
+        <TopQuotesBarChart
           data={topRepeatedQuotes}
           labelKey="quote_summary"
           chartTitle="Top Quotes"

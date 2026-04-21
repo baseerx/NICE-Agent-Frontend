@@ -39,13 +39,14 @@ export default function App() {
           
           <Route element={<AppLayout />}>
             <Route element={<ProtectedRoute />}>
-              <Route index path="/" element={<Home />} />
+              <Route index path="/" element={<VerifiedInsights />} />
+              <Route index path="/unverified-insights" element={<Home />} />
               <Route index path="/slider-form" element={<SliderForm />} />
               <Route index path="/verified-insights" element={<VerifiedInsights />} />
 
               <Route index path="/articles" element={<Articles />} />
               <Route index path="/add-article" element={<AddArticle />} />
-              <Route index path="/dashboard" element={<Home />} />
+              <Route index path="/dashboard" element={<VerifiedInsights />} />
 
               {/* Others Page */}
               <Route path="/verified-articles" element={<VerifiedArticles />} />

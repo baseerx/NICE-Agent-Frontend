@@ -42,7 +42,7 @@ export default function SignInForm() {
                 }
          }).then(async ()=>{
              await refresh();
-             navigate('/dashboard')
+             navigate('/')
              setLoading(false);
          }).catch((error:any)=>{
              console.error("Login failed:", error);

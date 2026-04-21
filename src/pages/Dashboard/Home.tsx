@@ -1,7 +1,7 @@
 import PageMeta from "../../components/common/PageMeta";
 import MainCard from "../../components/cards/MainCard";
 import StatisticsChart from "../../components/charts/bar/HorizontalBarChart";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "../../api/axios";
 import DatePicker from "../../components/form/date-picker";
 import { getCsrfToken } from "../../utils/global";
@@ -16,7 +16,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [sentimentLoading, setSentimentLoading] = useState(false);
   const [combinedSummary, setCombinedSummary] = useState<Summary>({});
-
+  const hasFetched = useRef(false);
   useEffect(() => {
     fetchNewsSentimentData();
     fetchTopRepeatedTagsData();
@@ -66,38 +66,35 @@ export default function Home() {
       console.error("Error fetching news sentiment data:", error);
     }
   };
+
+
   const fetchCombinedSummary = async () => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
     setSentimentLoading(true);
     try {
-      const response = await axios.post(
-        "articles/news-summary/",
-        {
-          start_date: startDate,
-          end_date: endDate,
+      const response = await axios.get("articles/news-summary/", {
+        headers: {
+          "X-CSRFToken": getCsrfToken(),
         },
-        {
-          headers: {
-            "X-CSRFToken": getCsrfToken(),
-          },
-        }
-      );
-      // console.log("Combined Summary Response:", response.data);
-
-      setSentimentLoading(false);
-
+      });
+      console.log("Combined Summary Response:", response.data);
       setCombinedSummary(response.data);
     } catch (error) {
+      console.error(error);
+    } finally {
       setSentimentLoading(false);
-      console.error("Error fetching news sentiment data:", error);
     }
   };
+
 
   useEffect(() => {
     if (startDate && endDate) {
       setLoading(true);
       fetchNewsSentimentData();
       fetchTopRepeatedTagsData();
-      fetchCombinedSummary();
+      // fetchCombinedSummary();
     }
   }, [startDate, endDate]);
 
@@ -168,7 +165,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
+
         <StatisticsChart
           data={newsSentimentData}
           labelKey="source"
