@@ -11,6 +11,7 @@ type Slider = {
     title: string;
     description: string;
     image: string;
+    flag: boolean;
 };
 
 type SliderFormData = {
@@ -32,16 +33,31 @@ export default function SliderForm() {
     const [sliders, setSliders] = useState<Slider[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
-
+   
+    const handleToggleFlag = async (id: number, currentFlag: boolean) => {
+        try {
+            await axios.patch(`/slider/toggle/${id}/`, { flag: !currentFlag }, {  
+                headers: { 'X-CSRFToken': getCsrfToken() },
+            });
+            setSliders((prev) =>
+                prev.map((s) => (s.id === id ? { ...s, flag: !currentFlag } : s))
+            );
+            fetchSliders(); // reload table to reflect changes
+        } catch (err) {
+            console.error('Toggle failed', err);
+        }
+    };
     // Fetch sliders from backend
     const fetchSliders = async () => {
         try {
             const res = await axios.get('/slider/');
             // Ensure URL is absolute and correct
-            const updatedData = res.data.map((s: Slider) => ({
-                ...s,
-                image: s.image.startsWith('http') ? s.image : `${window.location.origin}${s.image}`,
-            }));
+            const updatedData = res.data
+                .filter((s: Slider) => s.flag === true)
+                .map((s: Slider) => ({
+                    ...s,
+                    image: s.image.startsWith('http') ? s.image : `${window.location.origin}${s.image}`,
+                }));
             setSliders(updatedData);
         } catch (err) {
             console.error(err);
@@ -203,6 +219,9 @@ export default function SliderForm() {
                                 <td className="p-2 border">{item.description}</td>
                                 <td className="p-2 border text-center">
                                     <Button onClick={() => handleDelete(item.id)}>Delete</Button>
+                                    <Button className="ml-2 bg-gray-500 hover:bg-gray-200 text-black" onClick={() => handleToggleFlag(item.id, item.flag)}>
+                                        {item.flag==true ? 'Deactivate' : 'Activate'}
+                                    </Button>
                                 </td>
                             </tr>
                         ))}

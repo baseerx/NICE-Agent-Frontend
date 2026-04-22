@@ -31,7 +31,7 @@ export default function TopQuotesBarChart({
         chart: {
             type: "bar",
             stacked: true,
-            stackType: "100%", // Ensures the total bar always fills the width
+            stackType: "100%",
             toolbar: { show: false },
         },
         plotOptions: {
@@ -39,64 +39,61 @@ export default function TopQuotesBarChart({
                 horizontal: true,
                 barHeight: "75%",
                 dataLabels: {
-                    // This tells Apex to position the label in the center of the segment
-                    position: "center", 
+                    position: "center",
                 },
             },
         },
         colors: ["#22c55e", "#ef4444", "#64748b"],
         dataLabels: {
             enabled: true,
-            // Attach label to the first series (Positive). 
-            // In a 100% stacked chart, this is the most reliable anchor.
             enabledOnSeries: [0], 
-            formatter: (_val, opts) => {
-                const i = opts.dataPointIndex;
-                return quoteSummaries[i];
-            },
+            formatter: (_val, opts) => quoteSummaries[opts.dataPointIndex],
             style: {
-                fontSize: "12px",
+                fontSize: "13px", // Slightly smaller for better fit
                 fontWeight: 600,
                 colors: ["#000000"],
             },
-            // Centers the text relative to its anchor point
-            textAnchor: "middle", 
-            offsetX: 0,
+            textAnchor: "middle",
             background: {
                 enabled: true,
-                foreColor: "#000",
-                padding: 6,
+                foreColor: "#fff",
+                padding: 10,
                 borderRadius: 4,
-                opacity: 0.2,
-                borderWidth: 0,
+                opacity: 0.5,
             },
         },
         xaxis: {
             categories,
             max: 100,
-            labels: {
-                formatter: (val) => `${val}%`,
-            },
+            labels: { formatter: (val) => `${val}%` },
         },
         yaxis: {
-            labels: {
-                show: true,
-                style: { fontWeight: 600 },
-            },
-        },
-        grid: {
-            xaxis: { lines: { show: true } },
-            padding: {
-                left: 10,
-                right: 20, // Added slight right padding to prevent label clipping
-            },
+            labels: { style: { fontWeight: 600 } },
         },
         tooltip: {
             shared: true,
             intersect: false,
-            y: {
-                formatter: (val) => `${val}%`,
+            followCursor: true, // Follows mouse so it doesn't get stuck at the top
+            fixed: {
+                enabled: false, // Set to false to allow the tooltip to move with the mouse
             },
+            // Compact custom tooltip
+            custom: function({ dataPointIndex }) {
+                const item = data[dataPointIndex];
+                return (
+                    '<div style="padding: 10px; font-family: inherit; font-size: 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">' +
+                        '<div style="font-weight: bold; margin-bottom: 5px; color: #1f2937;">Quote ' + (dataPointIndex + 1) + '</div>' +
+                        '<div style="display: flex; flex-direction: column; gap: 2px;">' +
+                            '<div><span style="color: #22c55e;">●</span> Positive: <b>' + item.positive_percentage + '%</b></div>' +
+                            '<div><span style="color: #ef4444;">●</span> Negative: <b>' + item.negative_percentage + '%</b></div>' +
+                            '<div><span style="color: #64748b;">●</span> Neutral: <b>' + item.neutral_percentage + '%</b></div>' +
+                        '</div>' +
+                        '<div style="margin-top: 8px; padding-top: 5px; border-top: 1px solid #eee; font-weight: bold; color: #2563eb;">' +
+                            'Total Quotes: ' + item.total_quotes + 
+                        '</div>' +
+                    '</div>'
+                );
+            }
         },
         legend: {
             position: "top",
@@ -115,7 +112,8 @@ export default function TopQuotesBarChart({
             <h3 className="mb-6 text-lg font-bold text-gray-800 dark:text-white/90">
                 {chartTitle}
             </h3>
-            <div className="w-full overflow-hidden">
+            {/* Removed overflow-hidden from the container to ensure tooltip isn't clipped */}
+            <div className="w-full">
                 <Chart
                     options={options}
                     series={series}
