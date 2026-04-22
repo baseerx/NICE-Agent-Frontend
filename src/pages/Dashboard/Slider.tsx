@@ -24,12 +24,14 @@ const Slider = () => {
   const fetchSliders = async () => {
     try {
       const res = await axios.get("/slider/");
-      const data = res.data.filter((s: SliderItem) => s.flag === true).map((s: SliderItem) => ({
-        ...s,
-        image: s.image.startsWith("http")
-          ? s.image
-          : `${window.location.origin}${s.image}`,
-      }));
+      const data = res.data
+        .filter((s: SliderItem) => s.flag === true)
+        .map((s: SliderItem) => ({
+          ...s,
+          image: s.image.startsWith("http")
+            ? s.image
+            : `${window.location.origin}${s.image}`,
+        }));
       setSlides(data);
     } catch (err) {
       console.error("Failed to fetch sliders:", err);
@@ -47,10 +49,10 @@ const Slider = () => {
         description="NICE Agentic AI Application Dashboard"
       />
 
-      {/* FULL SCREEN WRAPPER */}
-      <div className="h-screen w-screen bg-black relative overflow-hidden">
-        
-        {/* Back Button */}
+      {/* FULL SCREEN ROOT */}
+      <div className="fixed inset-0 w-screen h-screen overflow-hidden m-0 p-0 bg-black">
+
+        {/* BACK BUTTON */}
         <button
           onClick={() => navigate(-1)}
           className="absolute top-6 left-6 text-xs z-50 px-3 py-1 bg-gray-300 hover:bg-black/10 text-black rounded-lg shadow-sm transition"
@@ -65,41 +67,25 @@ const Slider = () => {
           pagination={{ clickable: true }}
           autoplay={{ delay: 8000, disableOnInteraction: false }}
           loop
-          className="h-full w-full"
+          className="w-full h-full"
         >
           {slides.map((slide) => (
-            <SwiperSlide key={slide.id} className="h-full w-full flex items-center justify-center">
-              
-              {/* Image Wrapper */}
-              <div className="w-full h-full flex items-center justify-center bg-black">
-                
-                {/* IMAGE (NO CROP) */}
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className="
-                    max-w-full 
-                    max-h-full 
-                    object-contain 
-                    transition-transform duration-700
-                    hover:scale-105
-                  "
-                />
-              </div>
+            <SwiperSlide key={slide.id} className="w-full h-full">
 
-              {/* Optional Overlay (if needed later) */}
-              {/* 
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6">
-                <h2 className="text-white text-4xl font-bold">{slide.title}</h2>
-                <p className="text-white mt-4">{slide.description}</p>
-              </div> 
-              */}
+              {/* 🔥 STRETCHED IMAGE (NO GAPS, NO BLUR) */}
+              <img
+                src={slide.image}
+                alt={slide.title}
+                className="w-full h-full object-fill"
+              />
+
+           
 
             </SwiperSlide>
           ))}
 
           {slides.length === 0 && (
-            <SwiperSlide className="h-screen w-screen flex items-center justify-center">
+            <SwiperSlide className="w-full h-full flex items-center justify-center bg-black">
               <p className="text-white text-xl">Loading slides...</p>
             </SwiperSlide>
           )}
