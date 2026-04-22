@@ -14,6 +14,7 @@ type SliderItem = {
   title: string;
   description: string;
   image: string;
+  flag: boolean;
 };
 
 const Slider = () => {
@@ -23,7 +24,7 @@ const Slider = () => {
   const fetchSliders = async () => {
     try {
       const res = await axios.get("/slider/");
-      const data = res.data.map((s: SliderItem) => ({
+      const data = res.data.filter((s: SliderItem) => s.flag === true).map((s: SliderItem) => ({
         ...s,
         image: s.image.startsWith("http")
           ? s.image

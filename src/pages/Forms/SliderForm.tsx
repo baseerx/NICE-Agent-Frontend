@@ -52,12 +52,10 @@ export default function SliderForm() {
         try {
             const res = await axios.get('/slider/');
             // Ensure URL is absolute and correct
-            const updatedData = res.data
-                .filter((s: Slider) => s.flag === true)
-                .map((s: Slider) => ({
-                    ...s,
-                    image: s.image.startsWith('http') ? s.image : `${window.location.origin}${s.image}`,
-                }));
+            const updatedData = res.data.map((s: Slider) => ({
+                ...s,
+                image: s.image.startsWith('http') ? s.image : `${window.location.origin}${s.image}`,
+            }));
             setSliders(updatedData);
         } catch (err) {
             console.error(err);
