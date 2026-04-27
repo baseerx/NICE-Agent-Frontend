@@ -40,7 +40,15 @@ const Slider = () => {
 
   useEffect(() => {
     fetchSliders();
+
+    const interval = setInterval(() => {
+      fetchSliders();
+    }, 600000); // 10 minutes
+
+    return () => clearInterval(interval);
   }, []);
+
+
 
   return (
     <>
@@ -79,7 +87,7 @@ const Slider = () => {
                 className="w-full h-full object-fill"
               />
 
-           
+
 
             </SwiperSlide>
           ))}
