@@ -33,6 +33,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Make dropdown scrollable when options > 10
+  const isScrollable = options.length > 10;
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -211,7 +214,9 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
           {isOpen && (
             <div
-              className="absolute left-0 z-40 w-full overflow-y-auto bg-white rounded-lg shadow-sm top-full max-h-select dark:bg-gray-900"
+              className={`absolute left-0 z-40 w-full bg-white rounded-lg shadow-sm top-full dark:bg-gray-900 ${
+                isScrollable ? "overflow-y-auto max-h-60" : ""
+              }`}
               onClick={(e) => e.stopPropagation()}
               role="listbox"
               aria-label={label}
